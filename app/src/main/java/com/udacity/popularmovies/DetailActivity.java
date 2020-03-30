@@ -61,18 +61,26 @@ public class DetailActivity extends AppCompatActivity{
         mRatingTextView.setText(formatRatingText(getFloatExtra(intent, RATING_KEY)));
         mRuntimeTextView.setText(getIntExtra(intent, RUNTIME_KEY) + " min");
 
-        Uri uri = MovieDbUrlBuilder.getMovieImageURL(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_BIG);
+        Uri uri = MovieDbUrlBuilder.getMovieImageURL(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_ORIGINAL);
         Picasso.get().load(uri).into(mPosterView);
     }
 
 
     private String formatDateText(String dateString)
     {
-        String[] date = dateString.split("-");
-        int monthNumber = Integer.parseInt(date[1]);
-        String monthName = parseMonth(monthNumber);
+        if(dateString == null) return "";
+        String parsed = "";
 
-        return monthName + " " + date[0];
+        String[] date = dateString.split("-");
+        if(date.length>1)
+        {
+            int monthNumber = Integer.parseInt(date[1]);
+            parsed += parseMonth(monthNumber);
+        }
+        parsed += " ";
+        parsed += date[0];
+
+        return parsed;
     }
 
     private String parseMonth(int monthNumber)
@@ -97,7 +105,11 @@ public class DetailActivity extends AppCompatActivity{
     private String formatRatingText(float rating)
     {
         if(rating == 0) return "?";
-        else return String.valueOf(rating);
+
+        if(rating >= 10)
+            return String.valueOf((int)rating);
+        else
+            return String.valueOf(rating);
     }
 
     private String getStringExtra(Intent intent, String key) {

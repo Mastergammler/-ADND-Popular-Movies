@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         mGrid = findViewById(R.id.gv_main_view);
-        new DiscoverMoviesTask().execute(DiscoveryMode.POPULAR_DESC);
+        new DiscoverMoviesTask().execute(DiscoveryMode.USER_RATING_DESC);
     }
 
     private void loadImages(MovieCollection collection)
@@ -118,12 +118,15 @@ public class MainActivity extends AppCompatActivity{
             {
                 RequestCreator req = Picasso.get().load(imageUri);
                 req.into(iv);
-                iv.setAdjustViewBounds(true);
+
             }
             else
             {
-                iv.setImageResource(R.drawable.ic_launcher_foreground);
+                //iv.setBackgroundColor(Color.parseColor("#999999"));
+                iv.setImageResource(R.drawable.placeholder);
             }
+
+            iv.setAdjustViewBounds(true);
 
             return iv;
         }
