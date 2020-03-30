@@ -2,24 +2,18 @@ package com.udacity.popularmovies;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
-import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -31,7 +25,6 @@ import com.udacity.popularmovies.themoviedb.api.MovieInfo;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.jar.Attributes;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -50,8 +43,28 @@ public class MainActivity extends AppCompatActivity{
     {
         ImageViewAdapter adapter = new ImageViewAdapter(mGrid.getContext(),collection);
         mGrid.setAdapter(adapter);
+        mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                MovieInfo info = (MovieInfo) adapterView.getItemAtPosition(i);
+                stortDetailActivity(info);
+            }
+
+        });
         adapter.notifyDataSetChanged();
     }
+    private void stortDetailActivity(MovieInfo info)
+    {
+        Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+        intent.putExtra(DetailActivity.TITLE_KEY,info.title);
+        intent.putExtra(DetailActivity.OVERVIEW_KEY,info.overview);
+        intent.putExtra(DetailActivity.RELEASE_KEY,info.release_date);
+        intent.putExtra(DetailActivity.IMAGE_PATH_KEY,info.poster_path);
+        intent.putExtra(DetailActivity.RATING_KEY,info.vote_average);
+        startActivity(intent);
+    }
+
 
     //------------------
     //  LOAD JSON TASK
@@ -59,7 +72,6 @@ public class MainActivity extends AppCompatActivity{
 
     class ImageViewAdapter extends BaseAdapter
     {
-
         private Context mContext;
         private MovieCollection mItemColleciton;
 
