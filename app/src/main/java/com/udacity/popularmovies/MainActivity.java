@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.udacity.popularmovies.networking.NetworkingUtil;
+import com.udacity.popularmovies.themoviedb.api.MovieCollection;
 import com.udacity.popularmovies.themoviedb.api.MovieDbUrlBuilder;
+import com.udacity.popularmovies.themoviedb.api.MovieInfo;
 
 import java.io.IOException;
 import java.net.URL;
@@ -32,15 +34,23 @@ public class MainActivity extends AppCompatActivity{
             @Override
             protected String doInBackground(URL... urls) {
                 String jsonResult = null;
+                String firstTitle = "";
                 try
                 {
                     jsonResult = NetworkingUtil.getResponseFromHttpRequest(urls[0]);
+                    MovieCollection coll = MovieCollection.parseJson(jsonResult);
+                    for(MovieInfo m : coll.results)
+                    {
+                        firstTitle += m.title;
+                        firstTitle += "\n";
+                    }
                 }
                 catch (IOException e)
                 {
                     e.printStackTrace();
+                    jsonResult = "An error occurred";
                 }
-                return jsonResult;
+                return firstTitle;
             }
 
             @Override

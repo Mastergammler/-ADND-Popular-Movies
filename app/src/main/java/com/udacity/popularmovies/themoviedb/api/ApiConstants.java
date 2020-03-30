@@ -11,4 +11,5 @@ public interface ApiConstants
     String API_KEY_QUERY = "api_key";
     String SORT_BY_QUERY = "sort_by";
     String POPULARITY = "popularity.desc";
+    String VOTE_AVERAGE = "vote_average.desc";
 }
