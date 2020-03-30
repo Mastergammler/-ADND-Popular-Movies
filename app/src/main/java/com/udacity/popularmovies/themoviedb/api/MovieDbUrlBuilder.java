@@ -11,13 +11,18 @@ import java.net.URL;
  */
 public class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
 {
+    //--------------
+    //  FUNCTIONS
+    //--------------
+
     public static URL getMoviesByPopularityURL()
     {
-        Uri uri = Uri.parse(BASE_URL).buildUpon()
-                .path(BASE_PATH + DISCOVER_PARAM)
-                .appendQueryParameter(API_KEY_QUERY,API_KEY)
-                .appendQueryParameter(SORT_BY_QUERY,POPULARITY).build();
-        return NetworkingUtil.parseUri(uri);
+        return getDiscoveryUrlBy(POPULARITY);
+    }
+
+    public static URL getMoviesByUserRatingURL()
+    {
+        return getDiscoveryUrlBy(VOTE_AVERAGE);
     }
 
     public static Uri getMovieImageURL(String imagePath)
@@ -32,6 +37,19 @@ public class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
                 .appendPath(imagePath.substring(1))
                 .build();
         return uri;
+    }
+
+    //------------
+    //  HELPERS
+    //------------
+
+    private static URL getDiscoveryUrlBy(String discoveryMode)
+    {
+        Uri uri = Uri.parse(BASE_URL).buildUpon()
+                .path(BASE_PATH + DISCOVER_PARAM)
+                .appendQueryParameter(API_KEY_QUERY,API_KEY)
+                .appendQueryParameter(SORT_BY_QUERY,discoveryMode).build();
+        return NetworkingUtil.parseUri(uri);
     }
 
     private static String getImageSizePath(ImageSize size)

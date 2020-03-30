@@ -64,4 +64,45 @@ public class MainActivity extends AppCompatActivity{
             }
         }.execute(MovieDbUrlBuilder.getMoviesByPopularityURL());
     }
+
+    private void loadImages(MovieCollection collection)
+    {
+
+    }
+
+    //------------------
+    //  LOAD JSON TASK
+    //------------------
+
+    class DiscoverMoviesTask extends AsyncTask<DiscoveryMode,Void,MovieCollection>
+    {
+        @Override
+        protected MovieCollection doInBackground(DiscoveryMode... discoveryModes) {
+            String jsonResult = null;
+            URL url = getUrlForMode(discoveryModes[0]);
+            try
+            {
+                jsonResult = NetworkingUtil.getResponseFromHttpRequest(url);
+            }
+            catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            // TODO: 30.03.2020 check for null
+            MovieCollection coll = MovieCollection.parseJson(jsonResult);
+            return coll;
+        }
+
+        private URL getUrlForMode(DiscoveryMode mode)
+        {
+            switch (mode)
+            {
+                case USER_RATING_DESC:
+                    return MovieDbUrlBuilder.getMoviesByUserRatingURL();
+                default: return MovieDbUrlBuilder.getMoviesByPopularityURL();
+            }
+        }
+    }
+
 }
