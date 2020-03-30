@@ -19,4 +19,29 @@ public class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
                 .appendQueryParameter(SORT_BY_QUERY,POPULARITY).build();
         return NetworkingUtil.parseUri(uri);
     }
+
+    public static Uri getMovieImageURL(String imagePath)
+    {
+        return getMovieImageURL(imagePath,ImageSize.IMAGE_MEDIUM);
+    }
+
+    public static Uri getMovieImageURL(String imagePath,ImageSize size)
+    {
+        Uri uri = Uri.parse(IMAGE_BASE).buildUpon()
+                .appendPath(getImageSizePath(size))
+                .appendPath(imagePath.substring(1))
+                .build();
+        return uri;
+    }
+
+    private static String getImageSizePath(ImageSize size)
+    {
+        switch (size)
+        {
+            case IMAGE_SMALL: return IMAGE_SMALL;
+            case IMAGE_BIG: return IMAGE_BIG;
+            case IMAGE_ORIGINAL: return IMAGE_ORIGINAL;
+            default: return IMAGE_MEDIUM;
+        }
+    }
 }
