@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity{
         intent.putExtra(DetailActivity.RELEASE_KEY,info.release_date);
         intent.putExtra(DetailActivity.IMAGE_PATH_KEY,info.poster_path);
         intent.putExtra(DetailActivity.RATING_KEY,info.vote_average);
+        intent.putExtra(DetailActivity.RUNTIME_KEY,info.runtime);
         startActivity(intent);
     }
 

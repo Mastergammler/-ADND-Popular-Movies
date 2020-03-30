@@ -12,6 +12,7 @@ public class MovieInfo
     public float vote_average;
     public String original_title;
     public String release_date;
+    public int runtime;
 
     public static MovieInfo parseJson(String json)
     {
