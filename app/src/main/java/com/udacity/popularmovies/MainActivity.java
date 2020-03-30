@@ -87,24 +87,30 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
 
-
             ImageView iv;
             if(view == null)
             {
                 iv = new ImageView(mContext);
                 //iv.setLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-                iv.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-
+                iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                iv.setBackgroundColor(Color.parseColor("#115517"));
             }
             else
             {
                 iv = (ImageView) view;
             }
 
-            Uri imageUri = MovieDbUrlBuilder.getMovieImageURL(mItemColleciton.results[i].poster_path, ImageSize.IMAGE_BIG);
-            RequestCreator req = Picasso.get().load(imageUri);
-            req.into(iv);
-            iv.setAdjustViewBounds(true);
+            Uri imageUri = MovieDbUrlBuilder.getMovieImageURL(mItemColleciton.results[i].poster_path, ImageSize.IMAGE_MEDIUM);
+            if(imageUri != null)
+            {
+                RequestCreator req = Picasso.get().load(imageUri);
+                req.into(iv);
+                iv.setAdjustViewBounds(true);
+            }
+            else
+            {
+                iv.setImageResource(R.drawable.ic_launcher_foreground);
+            }
 
             return iv;
         }

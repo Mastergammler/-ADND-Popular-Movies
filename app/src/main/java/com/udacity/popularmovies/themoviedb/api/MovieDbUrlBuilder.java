@@ -32,8 +32,19 @@ public class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
 
     public static Uri getMovieImageURL(String imagePath,ImageSize size)
     {
+        if(imagePath == null) return null;
         Uri uri = Uri.parse(IMAGE_BASE).buildUpon()
                 .appendPath(getImageSizePath(size))
+                .appendPath(imagePath.substring(1))
+                .build();
+        return uri;
+    }
+
+    public static Uri getMovieBackdropUri(String imagePath)
+    {
+        if(imagePath == null) return null;
+        Uri uri = Uri.parse(IMAGE_BASE).buildUpon()
+                .appendPath("w300")
                 .appendPath(imagePath.substring(1))
                 .build();
         return uri;
