@@ -56,13 +56,48 @@ public class DetailActivity extends AppCompatActivity{
         Intent intent = getIntent();
 
         mTitleTextView.setText(getStringExtra(intent, TITLE_KEY));
-        mReleaseDateTextView.setText(getStringExtra(intent, RELEASE_KEY));
+        mReleaseDateTextView.setText(formatDateText(getStringExtra(intent, RELEASE_KEY)));
         mPlotSynopsisTextView.setText(getStringExtra(intent, OVERVIEW_KEY));
-        mRatingTextView.setText(String.valueOf(getFloatExtra(intent, RATING_KEY)));
-        mRuntimeTextView.setText(String.valueOf(getIntExtra(intent, RUNTIME_KEY)) + " min");
+        mRatingTextView.setText(formatRatingText(getFloatExtra(intent, RATING_KEY)));
+        mRuntimeTextView.setText(getIntExtra(intent, RUNTIME_KEY) + " min");
 
         Uri uri = MovieDbUrlBuilder.getMovieImageURL(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_BIG);
         Picasso.get().load(uri).into(mPosterView);
+    }
+
+
+    private String formatDateText(String dateString)
+    {
+        String[] date = dateString.split("-");
+        int monthNumber = Integer.parseInt(date[1]);
+        String monthName = parseMonth(monthNumber);
+
+        return monthName + " " + date[0];
+    }
+
+    private String parseMonth(int monthNumber)
+    {
+        switch(monthNumber)
+        {
+            default:return "Jan";
+            case 2: return "Feb";
+            case 3: return "Mar";
+            case 4: return "Apr";
+            case 5: return "May";
+            case 6: return "Jun";
+            case 7: return "Jul";
+            case 8: return "Aug";
+            case 9: return "Sep";
+            case 10: return "Oct";
+            case 11: return "Nov";
+            case 12: return "Dec";
+        }
+    }
+
+    private String formatRatingText(float rating)
+    {
+        if(rating == 0) return "?";
+        else return String.valueOf(rating);
     }
 
     private String getStringExtra(Intent intent, String key) {

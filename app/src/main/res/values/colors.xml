@@ -5,4 +5,5 @@
     <color name="colorAccent">#03DAC5</color>
     <color name="titleBackground">#3E3E3A</color>
     <color name="white">#eeeeee</color>
+    <color name="star">#FBC02D</color>
 </resources>
