@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,52 +23,27 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity{
 
-    @SuppressLint("StaticFieldLeak")
+    private GridLayout mGrid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final TextView tv = findViewById(R.id.tv_default);
-        final ImageView iv = findViewById(R.id.iv_poster);
-
-        AsyncTask task = new AsyncTask<URL, Void, MovieInfo>(){
-            @Override
-            protected void onPreExecute() {
-                tv.setText("Loading Data ...");
-            }
-
-            @Override
-            protected MovieInfo doInBackground(URL... urls) {
-                String jsonResult = null;
-                MovieInfo info = null;
-                try
-                {
-                    jsonResult = NetworkingUtil.getResponseFromHttpRequest(urls[0]);
-                    MovieCollection coll = MovieCollection.parseJson(jsonResult);
-                    info = coll.results[10];
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    jsonResult = "An error occurred";
-                }
-                return info;
-            }
-
-            @Override
-            protected void onPostExecute(MovieInfo s) {
-                tv.setText(s.title);
-                Uri imageUri = MovieDbUrlBuilder.getMovieImageURL(s.poster_path,ImageSize.IMAGE_BIG);
-                Log.i(MainActivity.class.getSimpleName(),"Image Uri: " + imageUri.toString());
-                Picasso.get().load(imageUri).into(iv);
-            }
-        }.execute(MovieDbUrlBuilder.getMoviesByPopularityURL());
+        mGrid = findViewById(R.id.gl_main_view);
+        new DiscoverMoviesTask().execute(DiscoveryMode.POPULAR_DESC);
     }
 
     private void loadImages(MovieCollection collection)
     {
-
+        for(MovieInfo movie : collection.results)
+        {
+            ImageView iv = new ImageView(mGrid.getContext());
+            iv.setScaleType(ImageView.ScaleType.CENTER);
+            Uri imageUri = MovieDbUrlBuilder.getMovieImageURL(movie.poster_path, ImageSize.IMAGE_BIG);
+            Picasso.get().load(imageUri).into(iv);
+            mGrid.addView(iv);
+        }
     }
 
     //------------------
@@ -92,6 +68,11 @@ public class MainActivity extends AppCompatActivity{
             // TODO: 30.03.2020 check for null
             MovieCollection coll = MovieCollection.parseJson(jsonResult);
             return coll;
+        }
+
+        @Override
+        protected void onPostExecute(MovieCollection movieCollection) {
+            loadImages(movieCollection);
         }
 
         private URL getUrlForMode(DiscoveryMode mode)
