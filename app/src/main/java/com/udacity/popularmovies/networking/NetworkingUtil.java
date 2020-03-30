@@ -1,6 +1,7 @@
 package com.udacity.popularmovies.networking;
 
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,7 @@ public class NetworkingUtil
     public static String getResponseFromHttpRequest(URL url) throws IOException
     {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        Log.i(NetworkingUtil.class.getSimpleName(),"Request for: " + url.toString());
         try
         {
             InputStream in = connection.getInputStream();
