@@ -62,7 +62,7 @@ public class DetailActivity extends AppCompatActivity{
         mRuntimeTextView.setText(getIntExtra(intent, RUNTIME_KEY) + " min");
 
         Uri uri = MovieDbUrlBuilder.getMovieImageURL(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_ORIGINAL);
-        Picasso.get().load(uri).into(mPosterView);
+        Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
     }
 
 
