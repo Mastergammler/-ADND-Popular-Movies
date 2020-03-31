@@ -1,4 +1,4 @@
-package com.udacity.popularmovies.themoviedb.api;
+package com.udacity.popularmovies.themoviedb.api.data;
 
 import com.google.gson.Gson;
 

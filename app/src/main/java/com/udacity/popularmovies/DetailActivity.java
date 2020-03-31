@@ -9,8 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.udacity.popularmovies.themoviedb.api.ImageSize;
-import com.udacity.popularmovies.themoviedb.api.MovieDbUrlBuilder;
+import com.udacity.popularmovies.themoviedb.api.IMovieDbApi;
+import com.udacity.popularmovies.themoviedb.api.MovieApi;
+import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 
 public class DetailActivity extends AppCompatActivity{
 
@@ -37,6 +38,8 @@ public class DetailActivity extends AppCompatActivity{
     private TextView mRuntimeTextView;
     private ImageView mPosterView;
 
+    private IMovieDbApi mMovieApi;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +51,8 @@ public class DetailActivity extends AppCompatActivity{
         mReleaseDateTextView = findViewById(R.id.tv_release_year);
         mPosterView = findViewById(R.id.iv_movie_poster);
         mRuntimeTextView = findViewById(R.id.tv_runtime);
+
+        mMovieApi = new MovieApi();
 
         setViewValues();
     }
@@ -61,7 +66,7 @@ public class DetailActivity extends AppCompatActivity{
         mRatingTextView.setText(formatRatingText(getFloatExtra(intent, RATING_KEY)));
         mRuntimeTextView.setText(getIntExtra(intent, RUNTIME_KEY) + " min");
 
-        Uri uri = MovieDbUrlBuilder.getMovieImageURL(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_ORIGINAL);
+        Uri uri = mMovieApi.getMoviePoster(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_MEDIUM);
         Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
     }
 

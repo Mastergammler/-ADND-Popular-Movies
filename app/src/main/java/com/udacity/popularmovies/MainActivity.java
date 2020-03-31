@@ -22,14 +22,10 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
-import com.udacity.popularmovies.networking.NetworkingUtil;
-import com.udacity.popularmovies.themoviedb.api.ImageSize;
-import com.udacity.popularmovies.themoviedb.api.MovieCollection;
-import com.udacity.popularmovies.themoviedb.api.MovieDbUrlBuilder;
-import com.udacity.popularmovies.themoviedb.api.MovieInfo;
-
-import java.io.IOException;
-import java.net.URL;
+import com.udacity.popularmovies.themoviedb.api.IMovieDbApi;
+import com.udacity.popularmovies.themoviedb.api.MovieApi;
+import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
+import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -40,6 +36,8 @@ public class MainActivity extends AppCompatActivity{
     private GridView mGrid;
     private TextView mErrorMessageText;
     private ProgressBar mLoadingIndicator;
+
+    private IMovieDbApi mMovieApi;
 
     //----------------
     //  Android Init
@@ -53,6 +51,8 @@ public class MainActivity extends AppCompatActivity{
         mGrid = findViewById(R.id.gv_main_view);
         mErrorMessageText = findViewById(R.id.tv_error_message);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
+
+        mMovieApi = new MovieApi();
 
         loadMoviesFor(DiscoveryMode.POPULAR_DESC);
     }
@@ -94,16 +94,16 @@ public class MainActivity extends AppCompatActivity{
         }
         new DiscoverMoviesTask().execute(mode);
     }
-    private void loadImages(MovieCollection collection)
+    private void loadImages(MovieInfo[] movies)
     {
-        if(collection == null)
+        if(movies == null)
         {
             mGrid.setVisibility(View.GONE);
             mErrorMessageText.setVisibility(View.VISIBLE);
         }
         else
         {
-            ImageViewAdapter adapter = new ImageViewAdapter(mGrid.getContext(),collection);
+            ImageViewAdapter adapter = new ImageViewAdapter(mGrid.getContext(),movies);
             mErrorMessageText.setVisibility(View.GONE);
             mGrid.setVisibility(View.VISIBLE);
             mGrid.setAdapter(adapter);
@@ -134,33 +134,33 @@ public class MainActivity extends AppCompatActivity{
     }
 
     //------------------
-    //  View Adapter
+    //    View Adapter
     //------------------
 
     class ImageViewAdapter extends BaseAdapter
     {
         private Context mContext;
-        private MovieCollection mItemColleciton;
+        private MovieInfo[] mItemColleciton;
 
-        public ImageViewAdapter(Context context, MovieCollection collection)
+        ImageViewAdapter(Context context, MovieInfo[] movies)
         {
             mContext = context;
-            mItemColleciton = collection;
+            mItemColleciton = movies;
         }
 
         @Override
         public int getCount() {
-            return mItemColleciton.results.length;
+            return mItemColleciton.length;
         }
 
         @Override
         public MovieInfo getItem(int i) {
-            return mItemColleciton.results[i];
+            return mItemColleciton[i];
         }
 
         @Override
         public long getItemId(int i) {
-            return mItemColleciton.results[i].id;
+            return mItemColleciton[i].id;
         }
 
         @Override
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity{
                 iv = (ImageView) view;
             }
 
-            Uri imageUri = MovieDbUrlBuilder.getMovieImageURL(mItemColleciton.results[i].poster_path, ImageSize.IMAGE_MEDIUM);
+            Uri imageUri = mMovieApi.getMoviePoster(mItemColleciton[i], ImageSize.IMAGE_MEDIUM);
             if(imageUri != null)
             {
                 RequestCreator req = Picasso.get().load(imageUri);
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity{
     //  Network Loader
     //------------------
 
-    class DiscoverMoviesTask extends AsyncTask<DiscoveryMode,Void,MovieCollection>
+    class DiscoverMoviesTask extends AsyncTask<DiscoveryMode,Void,MovieInfo[]>
     {
         @Override
         protected void onPreExecute() {
@@ -211,40 +211,20 @@ public class MainActivity extends AppCompatActivity{
         }
 
         @Override
-        protected MovieCollection doInBackground(DiscoveryMode... discoveryModes) {
-            String jsonResult = null;
-            URL url = getUrlForMode(discoveryModes[0]);
-            try
+        protected MovieInfo[] doInBackground(DiscoveryMode... discoveryModes)
+        {
+            switch (discoveryModes[0])
             {
-                jsonResult = NetworkingUtil.getResponseFromHttpRequest(url);
+                case USER_RATING_DESC:
+                    return mMovieApi.getMoviesByRating();
+                default:return mMovieApi.getMoviesByPopularity();
             }
-            catch(IOException e)
-            {
-                e.printStackTrace();
-            }
-
-            MovieCollection coll = null;
-            if(jsonResult != null)
-            {
-                coll = MovieCollection.parseJson(jsonResult);
-            }
-            return coll;
         }
 
         @Override
-        protected void onPostExecute(MovieCollection movieCollection) {
+        protected void onPostExecute(MovieInfo[] movies) {
             mLoadingIndicator.setVisibility(View.GONE);
-            loadImages(movieCollection);
-        }
-
-        private URL getUrlForMode(DiscoveryMode mode)
-        {
-            switch (mode)
-            {
-                case USER_RATING_DESC:
-                    return MovieDbUrlBuilder.getMoviesByUserRatingURL();
-                default: return MovieDbUrlBuilder.getMoviesByPopularityURL();
-            }
+            loadImages(movies);
         }
     }
 

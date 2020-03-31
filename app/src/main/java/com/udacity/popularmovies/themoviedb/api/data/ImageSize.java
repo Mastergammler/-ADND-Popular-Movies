@@ -1,4 +1,4 @@
-package com.udacity.popularmovies.themoviedb.api;
+package com.udacity.popularmovies.themoviedb.api.data;
 
 public enum ImageSize
 {
