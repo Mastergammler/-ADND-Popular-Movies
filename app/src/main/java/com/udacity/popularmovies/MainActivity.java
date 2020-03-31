@@ -21,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity{
     //------------
 
     private GridView mGrid;
+    private TextView mErorreMessageText;
 
     //------------
     //  Android
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         mGrid = findViewById(R.id.gv_main_view);
+        mErorreMessageText = findViewById(R.id.tv_error_message);
         loadMoviesFor(DiscoveryMode.POPULAR_DESC);
     }
 
@@ -97,18 +100,28 @@ public class MainActivity extends AppCompatActivity{
 
     private void loadImages(MovieCollection collection)
     {
-        ImageViewAdapter adapter = new ImageViewAdapter(mGrid.getContext(),collection);
-        mGrid.setAdapter(adapter);
-        mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        if(collection == null)
+        {
+            mGrid.setVisibility(View.GONE);
+            mErorreMessageText.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            ImageViewAdapter adapter = new ImageViewAdapter(mGrid.getContext(),collection);
+            mErorreMessageText.setVisibility(View.GONE);
+            mGrid.setVisibility(View.VISIBLE);
+            mGrid.setAdapter(adapter);
+            mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                MovieInfo info = (MovieInfo) adapterView.getItemAtPosition(i);
-                stortDetailActivity(info);
-            }
+                    MovieInfo info = (MovieInfo) adapterView.getItemAtPosition(i);
+                    stortDetailActivity(info);
+                }
 
-        });
-        adapter.notifyDataSetChanged();
+            });
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void stortDetailActivity(MovieInfo info)
@@ -122,7 +135,7 @@ public class MainActivity extends AppCompatActivity{
         intent.putExtra(DetailActivity.RUNTIME_KEY,info.runtime);
         startActivity(intent);
     }
-    
+
     //------------------
     //  View Adapter
     //------------------
@@ -207,8 +220,11 @@ public class MainActivity extends AppCompatActivity{
                 e.printStackTrace();
             }
 
-            // TODO: 30.03.2020 check for null
-            MovieCollection coll = MovieCollection.parseJson(jsonResult);
+            MovieCollection coll = null;
+            if(jsonResult != null)
+            {
+                coll = MovieCollection.parseJson(jsonResult);
+            }
             return coll;
         }
 

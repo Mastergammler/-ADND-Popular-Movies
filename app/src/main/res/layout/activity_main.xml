@@ -13,4 +13,13 @@
         android:numColumns="3"
         android:stretchMode="columnWidth"/>
 
+    <TextView
+        android:padding="16dp"
+        android:visibility="gone"
+        android:textStyle="italic"
+        android:textSize="16sp"
+        android:id="@+id/tv_error_message"
+        android:text="@string/error_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </FrameLayout>
