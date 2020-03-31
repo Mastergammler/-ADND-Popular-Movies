@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity{
             {
                 iv = new ImageView(mContext);
                 //iv.setLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-                iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
                 iv.setBackgroundColor(Color.parseColor("#115517"));
             }
             else
