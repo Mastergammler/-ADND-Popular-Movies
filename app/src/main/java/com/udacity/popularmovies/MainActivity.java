@@ -27,8 +27,8 @@ import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
-public class MainActivity extends AppCompatActivity{
-
+public class MainActivity extends AppCompatActivity
+{
     //------------
     //  Members
     //------------
@@ -44,7 +44,8 @@ public class MainActivity extends AppCompatActivity{
     //----------------
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity{
 
         mMovieApi = new MovieApi();
 
-        loadMoviesFor(DiscoveryMode.USER_RATING_DESC);
+        loadMoviesFor(DiscoveryMode.POPULAR_DESC);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -152,34 +153,37 @@ public class MainActivity extends AppCompatActivity{
         public int getCount() {
             return mMovieItems.length;
         }
-
         @Override
         public MovieInfo getItem(int i) {
             return mMovieItems[i];
         }
-
         @Override
         public long getItemId(int i) {
             return mMovieItems[i].id;
         }
-
         @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
+        public View getView(int i, View view, ViewGroup viewGroup)
+        {
+            ImageView imageView = createOrCastImageView(view);
+            updateImage(imageView,i);
 
-            ImageView iv;
-            if(view == null)
-            {
-                iv = new ImageView(mContext);
-                int newWidth = mGrid.getColumnWidth();
-                iv.setLayoutParams(new ViewGroup.LayoutParams(newWidth,(int)(1.5*newWidth)));
-                iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            }
-            else
-            {
-                iv = (ImageView) view;
-            }
+            return imageView;
+        }
 
-            Uri imageUri = mMovieApi.getMoviePoster(mMovieItems[i], ImageSize.IMAGE_MEDIUM);
+        private ImageView createOrCastImageView(View view)
+        {
+            if(view != null) return (ImageView) view;
+
+            ImageView iv = new ImageView(mContext);
+            int newWidth = mGrid.getColumnWidth();
+            iv.setLayoutParams(new ViewGroup.LayoutParams(newWidth,(int)(1.5*newWidth)));
+            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+            return iv;
+        }
+        private void updateImage(ImageView iv, int itemIndex)
+        {
+            Uri imageUri = mMovieApi.getMoviePoster(mMovieItems[itemIndex], ImageSize.IMAGE_MEDIUM);
             if(imageUri != null)
             {
                 RequestCreator req = Picasso.get().load(imageUri);
@@ -187,12 +191,8 @@ public class MainActivity extends AppCompatActivity{
             }
             else
             {
-                iv.setBackgroundColor(Color.parseColor("#999999"));
                 iv.setImageResource(R.drawable.placeholder);
             }
-
-            //iv.setAdjustViewBounds(true);
-            return iv;
         }
     }
 
