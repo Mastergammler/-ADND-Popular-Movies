@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity{
             if(view == null)
             {
                 iv = new ImageView(mContext);
-                //iv.setLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-                iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                iv.setMaxHeight(500);
+                iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 iv.setBackgroundColor(Color.parseColor("#115517"));
             }
             else
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity{
             }
             else
             {
-                //iv.setBackgroundColor(Color.parseColor("#999999"));
+                iv.setBackgroundColor(Color.parseColor("#999999"));
                 iv.setImageResource(R.drawable.placeholder);
             }
 
