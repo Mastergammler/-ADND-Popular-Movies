@@ -10,6 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+
+/**
+ * Utility class for networking functions
+ */
 public class NetworkingUtil
 {
 
@@ -48,8 +52,4 @@ public class NetworkingUtil
             connection.disconnect();
         }
     }
-
-
-
-
 }

@@ -1,11 +1,11 @@
 package com.udacity.popularmovies.themoviedb.api;
 
 
-import android.graphics.Movie;
 import android.net.Uri;
 import android.util.Log;
 
 import com.udacity.popularmovies.networking.NetworkingUtil;
+import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieCollection;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;

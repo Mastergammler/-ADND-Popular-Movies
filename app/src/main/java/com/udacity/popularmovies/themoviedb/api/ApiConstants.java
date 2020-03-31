@@ -18,8 +18,8 @@ public interface ApiConstants
     //**************
 
     String IMAGE_BASE = "https://image.tmdb.org/t/p/";
-    String IMAGE_MEDIUM = "w185";
     String IMAGE_SMALL = "w92";
+    String IMAGE_MEDIUM = "w185";
     String IMAGE_BIG = "w500";
     String IMAGE_ORIGINAL = "original";
 }

@@ -1,11 +1,9 @@
-package com.udacity.popularmovies.themoviedb.api;
+package com.udacity.popularmovies.themoviedb;
 
 import android.net.Uri;
 
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
-
-import java.util.List;
 
 /**
  * Api access for themoviedb api

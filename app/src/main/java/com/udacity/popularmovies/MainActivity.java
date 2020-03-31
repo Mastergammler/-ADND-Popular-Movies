@@ -22,7 +22,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
-import com.udacity.popularmovies.themoviedb.api.IMovieDbApi;
+import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
@@ -140,27 +140,27 @@ public class MainActivity extends AppCompatActivity{
     class ImageViewAdapter extends BaseAdapter
     {
         private Context mContext;
-        private MovieInfo[] mItemColleciton;
+        private MovieInfo[] mMovieItems;
 
         ImageViewAdapter(Context context, MovieInfo[] movies)
         {
             mContext = context;
-            mItemColleciton = movies;
+            mMovieItems = movies;
         }
 
         @Override
         public int getCount() {
-            return mItemColleciton.length;
+            return mMovieItems.length;
         }
 
         @Override
         public MovieInfo getItem(int i) {
-            return mItemColleciton[i];
+            return mMovieItems[i];
         }
 
         @Override
         public long getItemId(int i) {
-            return mItemColleciton[i].id;
+            return mMovieItems[i].id;
         }
 
         @Override
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity{
             if(view == null)
             {
                 iv = new ImageView(mContext);
-                iv.setMaxHeight(500);
+                //iv.setMaxHeight(500);
                 iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 iv.setBackgroundColor(Color.parseColor("#115517"));
             }
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity{
                 iv = (ImageView) view;
             }
 
-            Uri imageUri = mMovieApi.getMoviePoster(mItemColleciton[i], ImageSize.IMAGE_MEDIUM);
+            Uri imageUri = mMovieApi.getMoviePoster(mMovieItems[i], ImageSize.IMAGE_MEDIUM);
             if(imageUri != null)
             {
                 RequestCreator req = Picasso.get().load(imageUri);

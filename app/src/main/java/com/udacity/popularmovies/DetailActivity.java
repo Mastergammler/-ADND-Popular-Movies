@@ -9,13 +9,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.udacity.popularmovies.themoviedb.api.IMovieDbApi;
+import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 
-public class DetailActivity extends AppCompatActivity{
-
-
+/**
+ * Activity for the detail view of a specific movies
+ * Shows the picture as well as additional information
+ */
+public class DetailActivity extends AppCompatActivity
+{
     //---------------
     //  Constants
     //---------------
@@ -41,7 +44,8 @@ public class DetailActivity extends AppCompatActivity{
     private IMovieDbApi mMovieApi;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
@@ -54,23 +58,32 @@ public class DetailActivity extends AppCompatActivity{
 
         mMovieApi = new MovieApi();
 
-        setViewValues();
+        initViewValues();
     }
 
-    private void setViewValues() {
+    private void initViewValues()
+    {
         Intent intent = getIntent();
 
         mTitleTextView.setText(getStringExtra(intent, TITLE_KEY));
         mReleaseDateTextView.setText(formatDateText(getStringExtra(intent, RELEASE_KEY)));
         mPlotSynopsisTextView.setText(getStringExtra(intent, OVERVIEW_KEY));
         mRatingTextView.setText(formatRatingText(getFloatExtra(intent, RATING_KEY)));
-        mRuntimeTextView.setText(getIntExtra(intent, RUNTIME_KEY) + " min");
+        mRuntimeTextView.setText(parseMovieLengthText(getIntExtra(intent, RUNTIME_KEY)));
 
         Uri uri = mMovieApi.getMoviePoster(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_MEDIUM);
         Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
     }
 
+    //------------
+    //  HELPERS
+    //------------
 
+    private String parseMovieLengthText(int movieLength)
+    {
+        if(movieLength == 0) return "";
+        return movieLength + " min";
+    }
     private String formatDateText(String dateString)
     {
         if(dateString == null) return "";
@@ -87,7 +100,6 @@ public class DetailActivity extends AppCompatActivity{
 
         return parsed;
     }
-
     private String parseMonth(int monthNumber)
     {
         switch(monthNumber)
@@ -106,7 +118,6 @@ public class DetailActivity extends AppCompatActivity{
             case 12: return "Dec";
         }
     }
-
     private String formatRatingText(float rating)
     {
         if(rating == 0) return "?";
@@ -117,14 +128,14 @@ public class DetailActivity extends AppCompatActivity{
             return String.valueOf(rating);
     }
 
-    private String getStringExtra(Intent intent, String key) {
+    private String getStringExtra(Intent intent, String key)
+    {
         if(intent.hasExtra(key))
         {
             return intent.getStringExtra(key);
         }
         return "";
     }
-
     private int getIntExtra(Intent intent, String key)
     {
         if(intent.hasExtra(key))
@@ -133,7 +144,6 @@ public class DetailActivity extends AppCompatActivity{
         }
         return 0;
     }
-
     private float getFloatExtra(Intent intent, String key)
     {
         if(intent.hasExtra(key))
