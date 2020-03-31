@@ -5,9 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.ActionProvider;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,7 +35,15 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity{
 
+    //------------
+    //  Members
+    //------------
+
     private GridView mGrid;
+
+    //------------
+    //  Android
+    //------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +51,48 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         mGrid = findViewById(R.id.gv_main_view);
-        new DiscoverMoviesTask().execute(DiscoveryMode.USER_RATING_DESC);
+        loadMoviesFor(DiscoveryMode.POPULAR_DESC);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = new MenuInflater(this);
+        inflater.inflate(R.menu.main,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_sort_by_popular:
+                loadMoviesFor(DiscoveryMode.POPULAR_DESC);
+                return true;
+            case R.id.action_sort_by_rating:
+                loadMoviesFor(DiscoveryMode.USER_RATING_DESC);
+                return true;
+            default: return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+
+
+
+
+    private void loadMoviesFor(DiscoveryMode mode)
+    {
+        switch (mode)
+        {
+            case POPULAR_DESC:
+                setTitle(R.string.popular_movies);
+                break;
+            case USER_RATING_DESC:
+                setTitle(R.string.highes_rated_movies);
+                break;
+        }
+        new DiscoverMoviesTask().execute(mode);
     }
 
     private void loadImages(MovieCollection collection)
@@ -54,6 +110,7 @@ public class MainActivity extends AppCompatActivity{
         });
         adapter.notifyDataSetChanged();
     }
+
     private void stortDetailActivity(MovieInfo info)
     {
         Intent intent = new Intent(MainActivity.this,DetailActivity.class);
@@ -65,10 +122,9 @@ public class MainActivity extends AppCompatActivity{
         intent.putExtra(DetailActivity.RUNTIME_KEY,info.runtime);
         startActivity(intent);
     }
-
-
+    
     //------------------
-    //  LOAD JSON TASK
+    //  View Adapter
     //------------------
 
     class ImageViewAdapter extends BaseAdapter
@@ -132,6 +188,9 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    //------------------
+    //  Network Loader
+    //------------------
 
     class DiscoverMoviesTask extends AsyncTask<DiscoveryMode,Void,MovieCollection>
     {
