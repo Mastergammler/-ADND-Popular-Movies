@@ -6,6 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ProgressBar
+        android:id="@+id/pb_loading_indicator"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"/>
+
     <GridView
         android:id="@+id/gv_main_view"
         android:layout_width="match_parent"
@@ -14,6 +21,7 @@
         android:stretchMode="columnWidth"/>
 
     <TextView
+        android:textAlignment="center"
         android:padding="16dp"
         android:visibility="gone"
         android:textStyle="italic"

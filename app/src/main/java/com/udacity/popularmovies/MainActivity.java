@@ -5,22 +5,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.ActionProvider;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -41,11 +38,12 @@ public class MainActivity extends AppCompatActivity{
     //------------
 
     private GridView mGrid;
-    private TextView mErorreMessageText;
+    private TextView mErrorMessageText;
+    private ProgressBar mLoadingIndicator;
 
-    //------------
-    //  Android
-    //------------
+    //----------------
+    //  Android Init
+    //----------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,17 +51,17 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         mGrid = findViewById(R.id.gv_main_view);
-        mErorreMessageText = findViewById(R.id.tv_error_message);
+        mErrorMessageText = findViewById(R.id.tv_error_message);
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
+
         loadMoviesFor(DiscoveryMode.POPULAR_DESC);
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = new MenuInflater(this);
         inflater.inflate(R.menu.main,menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -79,10 +77,9 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-
-
-
-
+    //------------
+    //  Methods
+    //------------
 
     private void loadMoviesFor(DiscoveryMode mode)
     {
@@ -97,18 +94,17 @@ public class MainActivity extends AppCompatActivity{
         }
         new DiscoverMoviesTask().execute(mode);
     }
-
     private void loadImages(MovieCollection collection)
     {
         if(collection == null)
         {
             mGrid.setVisibility(View.GONE);
-            mErorreMessageText.setVisibility(View.VISIBLE);
+            mErrorMessageText.setVisibility(View.VISIBLE);
         }
         else
         {
             ImageViewAdapter adapter = new ImageViewAdapter(mGrid.getContext(),collection);
-            mErorreMessageText.setVisibility(View.GONE);
+            mErrorMessageText.setVisibility(View.GONE);
             mGrid.setVisibility(View.VISIBLE);
             mGrid.setAdapter(adapter);
             mGrid.setOnItemClickListener(new AdapterView.OnItemClickListener(){
@@ -116,23 +112,24 @@ public class MainActivity extends AppCompatActivity{
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
                     MovieInfo info = (MovieInfo) adapterView.getItemAtPosition(i);
-                    stortDetailActivity(info);
+                    startDetailActivity(info);
                 }
 
             });
             adapter.notifyDataSetChanged();
         }
     }
-
-    private void stortDetailActivity(MovieInfo info)
+    private void startDetailActivity(MovieInfo info)
     {
         Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+
         intent.putExtra(DetailActivity.TITLE_KEY,info.title);
         intent.putExtra(DetailActivity.OVERVIEW_KEY,info.overview);
         intent.putExtra(DetailActivity.RELEASE_KEY,info.release_date);
         intent.putExtra(DetailActivity.IMAGE_PATH_KEY,info.poster_path);
         intent.putExtra(DetailActivity.RATING_KEY,info.vote_average);
         intent.putExtra(DetailActivity.RUNTIME_KEY,info.runtime);
+
         startActivity(intent);
     }
 
@@ -208,6 +205,12 @@ public class MainActivity extends AppCompatActivity{
     class DiscoverMoviesTask extends AsyncTask<DiscoveryMode,Void,MovieCollection>
     {
         @Override
+        protected void onPreExecute() {
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+            mGrid.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
         protected MovieCollection doInBackground(DiscoveryMode... discoveryModes) {
             String jsonResult = null;
             URL url = getUrlForMode(discoveryModes[0]);
@@ -230,6 +233,7 @@ public class MainActivity extends AppCompatActivity{
 
         @Override
         protected void onPostExecute(MovieCollection movieCollection) {
+            mLoadingIndicator.setVisibility(View.GONE);
             loadImages(movieCollection);
         }
 
