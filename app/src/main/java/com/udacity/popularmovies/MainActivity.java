@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity{
 
         mMovieApi = new MovieApi();
 
-        loadMoviesFor(DiscoveryMode.POPULAR_DESC);
+        loadMoviesFor(DiscoveryMode.USER_RATING_DESC);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -170,9 +170,9 @@ public class MainActivity extends AppCompatActivity{
             if(view == null)
             {
                 iv = new ImageView(mContext);
-                //iv.setMaxHeight(500);
+                int newWidth = mGrid.getColumnWidth();
+                iv.setLayoutParams(new ViewGroup.LayoutParams(newWidth,(int)(1.5*newWidth)));
                 iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                iv.setBackgroundColor(Color.parseColor("#115517"));
             }
             else
             {
@@ -184,7 +184,6 @@ public class MainActivity extends AppCompatActivity{
             {
                 RequestCreator req = Picasso.get().load(imageUri);
                 req.into(iv);
-
             }
             else
             {
@@ -192,8 +191,7 @@ public class MainActivity extends AppCompatActivity{
                 iv.setImageResource(R.drawable.placeholder);
             }
 
-            iv.setAdjustViewBounds(true);
-
+            //iv.setAdjustViewBounds(true);
             return iv;
         }
     }
