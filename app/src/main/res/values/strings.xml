@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Popular Movies</string>
     <string name="detail_activity">Movie Details</string>
-    <string name="popular">popular</string>
-    <string name="user_rating">user rating</string>
+    <string name="popular">Popularity</string>
+    <string name="user_rating">User Rating</string>
     <string name="popular_movies">Popular Movies</string>
-    <string name="highes_rated_movies">Best Rated Movies</string>
-    <string name="error_message">Unable to load movie from api. Is a network connection available?</string>
+    <string name="highest_rated_movies">Best Rated Movies</string>
+    <string name="error_message">Unable to load movies from the api. Is a network connection available?</string>
 </resources>

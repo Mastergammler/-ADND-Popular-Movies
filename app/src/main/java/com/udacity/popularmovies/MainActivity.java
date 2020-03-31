@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -90,7 +89,7 @@ public class MainActivity extends AppCompatActivity
                 setTitle(R.string.popular_movies);
                 break;
             case USER_RATING_DESC:
-                setTitle(R.string.highes_rated_movies);
+                setTitle(R.string.highest_rated_movies);
                 break;
         }
         new DiscoverMoviesTask().execute(mode);
