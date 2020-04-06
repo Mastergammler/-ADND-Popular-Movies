@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mMovieApi = new MovieApi();
 
         // TEST ONLY
-        AppPreferences.setPreferredGrid(this,DisplayMode.GRID_4x4);
+        AppPreferences.setPreferredGrid(this,DisplayMode.GRID_3x3);
 
         setPreferredGridView();
         loadMoviesFor(AppPreferences.getLatestDiscoveryMode(this));
