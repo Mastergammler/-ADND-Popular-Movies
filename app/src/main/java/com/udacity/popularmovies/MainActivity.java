@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity
 
         mMovieApi = new MovieApi();
 
-        loadMoviesFor(DiscoveryMode.POPULAR_DESC);
+        loadMoviesFor(AppPreferences.getLatestDiscoveryMode(this));
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -65,16 +66,22 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
+        DiscoveryMode selectedMode;
+
         switch (item.getItemId())
         {
             case R.id.action_sort_by_popular:
-                loadMoviesFor(DiscoveryMode.POPULAR_DESC);
-                return true;
+                selectedMode = DiscoveryMode.POPULAR_DESC;
+                break;
             case R.id.action_sort_by_rating:
-                loadMoviesFor(DiscoveryMode.USER_RATING_DESC);
-                return true;
+                selectedMode = DiscoveryMode.USER_RATING_DESC;
+                break;
             default: return super.onOptionsItemSelected(item);
         }
+
+        AppPreferences.updateLatestDiscoveryMode(this,selectedMode);
+        loadMoviesFor(selectedMode);
+        return true;
     }
 
     //------------
