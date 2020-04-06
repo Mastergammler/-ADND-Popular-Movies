@@ -30,8 +30,9 @@ public class SyncDiscoveryTask
 {
 
     // TODO: 06.04.2020 set to real time
-    private static final int TIME_INTERVAL_MIN_HOURS = 1;
-    private static final int TIME_INTERVAL_MAX_HOURS = 2;
+    private static final int TIME_INTERVAL_MIN_HOURS = 12;
+    private static final int TIME_INTERVAL_MAX_HOURS = 24;
+    private static final TimeUnit UNIT_FOR_SCHEDULER = TimeUnit.MINUTES;
 
     private static final String SCHEDULED_SYNC_TASK_TAG = "scheduled-cache-sync";
     private static boolean sInitialized;
@@ -54,8 +55,8 @@ public class SyncDiscoveryTask
 
         PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
                 UpdateCacheWorker.class,
-                TIME_INTERVAL_MIN_HOURS, TimeUnit.HOURS,
-                TIME_INTERVAL_MAX_HOURS,TimeUnit.HOURS)
+                TIME_INTERVAL_MIN_HOURS, UNIT_FOR_SCHEDULER,
+                TIME_INTERVAL_MAX_HOURS,UNIT_FOR_SCHEDULER)
                 .setConstraints(constraints)
                 .addTag(SCHEDULED_SYNC_TASK_TAG)
                 .build();
