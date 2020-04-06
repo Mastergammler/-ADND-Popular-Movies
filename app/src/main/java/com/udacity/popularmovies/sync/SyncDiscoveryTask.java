@@ -46,7 +46,6 @@ public class SyncDiscoveryTask
         scheduleReoccurringUpdates(context);
     }
 
-
     public static synchronized void scheduleReoccurringUpdates(Context context)
     {
         Constraints constraints = new Constraints.Builder()
