@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.udacity.popularmovies.DiscoveryMode;
+import com.udacity.popularmovies.DisplayMode;
+import com.udacity.popularmovies.R;
 
 /**
  * Handles the Shared Preferences for the App
@@ -16,7 +18,8 @@ public class AppPreferences
     //##  CONSTANTS  ##
     //#################
 
-    private static final DiscoveryMode DEFAULT_DISCOVERY_MODE = DiscoveryMode.POPULAR_DESC;
+    private static final int DEFAULT_DISCOVERY_MODE = DiscoveryMode.POPULAR_DESC.ordinal();
+    private static final int DEFAULT_DISPLAY_MODE = DisplayMode.GRID_3x3.ordinal();
 
     //---------------------
     //  User Preferences
@@ -49,6 +52,8 @@ public class AppPreferences
 
     public static void updateLatestDiscoveryMode(Context context, DiscoveryMode mode)
     {
+        if(mode == null) return;
+
         SharedPreferences.Editor editor = context.getSharedPreferences(USER_PREFERENCES_ID,Context.MODE_PRIVATE).edit();
         editor.putInt(UP_LATEST_DISCOVERY_MODE_KEY,mode.ordinal());
         editor.apply();
@@ -57,12 +62,47 @@ public class AppPreferences
     public static DiscoveryMode getLatestDiscoveryMode(Context context)
     {
         SharedPreferences prefs = context.getSharedPreferences(USER_PREFERENCES_ID,Context.MODE_PRIVATE);
-        int discoveryOrdinal = prefs.getInt(UP_LATEST_DISCOVERY_MODE_KEY,DEFAULT_DISCOVERY_MODE.ordinal());
+        int discoveryOrdinal = prefs.getInt(UP_LATEST_DISCOVERY_MODE_KEY,DEFAULT_DISCOVERY_MODE);
         return DiscoveryMode.of(discoveryOrdinal);
     }
 
+    public static void setPreferredGrid(Context context, DisplayMode preferredMode)
+    {
+        if(preferredMode == null) return;
+
+        SharedPreferences prefs = context.getSharedPreferences(USER_PREFERENCES_ID,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(UP_GRID_VIEW_PREF_DEF_KEY,preferredMode.ordinal());
+        editor.apply();
+    }
+
+    public static DisplayMode getPreferredGrid(Context context)
+    {
+        SharedPreferences prefs = context.getSharedPreferences(USER_PREFERENCES_ID,Context.MODE_PRIVATE);
+        int ordinal = prefs.getInt(UP_GRID_VIEW_PREF_DEF_KEY,DEFAULT_DISPLAY_MODE);
+        return DisplayMode.of(ordinal);
+    }
+
+    public static void setSavePictureInDB(Context context, boolean saveInDb)
+    {
+        SharedPreferences prefs = context.getSharedPreferences(USER_PREFERENCES_ID,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(UP_SAVE_PICTURES_IN_DB_KEY,saveInDb);
+        editor.apply();
+    }
+
+    public static boolean getSavePictureInDB(Context context)
+    {
+        SharedPreferences prefs = context.getSharedPreferences(USER_PREFERENCES_ID,Context.MODE_PRIVATE);
+        boolean saveInDb = prefs.getBoolean(
+                UP_SAVE_PICTURES_IN_DB_KEY,
+                context.getResources().getBoolean(R.bool.pref_save_picture_in_db_default));
+        return saveInDb;
+    }
+    
     /**
      * Get the cached json string from the preferences
+     * The json object is contains the MovieInfo[]
      * @param context Application context to get the SharedPreferences
      * @return null if nothing was saved yet
      */

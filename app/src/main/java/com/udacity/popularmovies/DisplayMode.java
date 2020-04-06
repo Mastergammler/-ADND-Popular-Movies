@@ -24,4 +24,9 @@ public enum DisplayMode
             default: throw new IllegalArgumentException("No string specified for enum: " + super.toString());
         }
     }
+
+    public static DisplayMode of(int ordinal)
+    {
+        return DisplayMode.values()[ordinal];
+    }
 }
