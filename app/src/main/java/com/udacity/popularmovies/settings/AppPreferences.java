@@ -110,7 +110,7 @@ public class AppPreferences
     {
         SharedPreferences userPrefs = context.getSharedPreferences(USER_PREFERENCES_ID,Context.MODE_PRIVATE);
         SharedPreferences cachePrefs = context.getSharedPreferences(CACHING_PREFERENCES_ID,Context.MODE_PRIVATE);
-        int discoveryOrdinal = userPrefs.getInt(UP_LATEST_DISCOVERY_MODE_KEY,DEFAULT_DISCOVERY_MODE.ordinal());
+        int discoveryOrdinal = userPrefs.getInt(UP_LATEST_DISCOVERY_MODE_KEY,DEFAULT_DISCOVERY_MODE);
         DiscoveryMode currentMode = DiscoveryMode.of(discoveryOrdinal);
         return cachePrefs.getString(keyOf(currentMode),null);
     }

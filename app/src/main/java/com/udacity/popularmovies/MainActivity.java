@@ -1,10 +1,14 @@
 package com.udacity.popularmovies;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Movie;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,10 +31,9 @@ import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
-import com.udacity.popularmovies.themoviedb.api.data.MovieCollection;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieInfo[]>
 {
     //------------
     //  Members
@@ -143,6 +146,8 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+
+
     //------------------
     //    View Adapter
     //------------------
@@ -208,6 +213,46 @@ public class MainActivity extends AppCompatActivity
     //------------------
     //  Network Loader
     //------------------
+
+    /**
+     * The loader to load the discovery data from the movie api
+     * The loader should only be called the first time the app starts
+     * After that the data should be cached and updated by a scheduled service
+     * !! ONLY CALL WHEN CACHE IS NULL !!
+     */
+    @NonNull
+    @Override
+    public Loader<MovieInfo[]> onCreateLoader(int id, @Nullable Bundle args)
+    {
+        return new AsyncTaskLoader<MovieInfo[]>(this)
+        {
+            // TODO: 06.04.2020 Loader runs always, checks for null by himself 
+            
+            @Override
+            protected void onStartLoading() {
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+                mGrid.setVisibility(View.INVISIBLE);
+            }
+
+            @Nullable
+            @Override
+            public MovieInfo[] loadInBackground()
+            {
+
+                return new MovieInfo[0];
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<MovieInfo[]> loader, MovieInfo[] movies)
+    {
+        mLoadingIndicator.setVisibility(View.GONE);
+        loadImages(movies);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<MovieInfo[]> loader) {}
 
     class DiscoverMoviesTask extends AsyncTask<DiscoveryMode,Void,MovieInfo[]>
     {
