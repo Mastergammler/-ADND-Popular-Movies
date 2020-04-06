@@ -12,6 +12,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     //#################
 
     private static final int SYNC_DISCOVERY_CACHE_LOADER_ID = 344382;
+    private static final String GRID_VIEW_SCROLL_POSITION_KEY = "grid-view-scroll-state";
 
     //------------
     //  Members
@@ -49,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private GridView mGrid;
     private TextView mErrorMessageText;
     private ProgressBar mLoadingIndicator;
+
+    private DragEvent mLastEvent;
 
     private IMovieDbApi mMovieApi;
 
@@ -60,9 +65,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         mGrid = findViewById(R.id.gv_main_view);
+        if(savedInstanceState != null && savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY) != null)
+        {
+            mGrid.onRestoreInstanceState(savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
+        }
+
         mErrorMessageText = findViewById(R.id.tv_error_message);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
@@ -75,6 +86,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         loadMoviesFor(AppPreferences.getLatestDiscoveryMode(this));
         SyncDiscoveryTask.initialize(this);
     }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(GRID_VIEW_SCROLL_POSITION_KEY,mGrid.onSaveInstanceState());
+    }
+
+
+
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = new MenuInflater(this);
