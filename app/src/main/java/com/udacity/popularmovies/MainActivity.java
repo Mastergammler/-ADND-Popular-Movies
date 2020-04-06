@@ -28,6 +28,8 @@ import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.udacity.popularmovies.settings.AppPreferences;
+import com.udacity.popularmovies.sync.SyncDiscoveryDataIntentService;
+import com.udacity.popularmovies.sync.SyncDiscoveryTask;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
@@ -35,6 +37,12 @@ import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieInfo[]>
 {
+    //#################
+    //##  CONSTANTS  ##
+    //#################
+
+    private static final int SYNC_DISCOVERY_CACHE_LOADER_ID = 344382;
+
     //------------
     //  Members
     //------------
@@ -105,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 setTitle(R.string.highest_rated_movies);
                 break;
         }
-        new DiscoverMoviesTask().execute(mode);
+        LoaderManager.getInstance(this).restartLoader(SYNC_DISCOVERY_CACHE_LOADER_ID,null,this);
     }
     private void loadImages(MovieInfo[] movies)
     {
@@ -145,8 +153,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         startActivity(intent);
     }
-
-
 
     //------------------
     //    View Adapter
@@ -232,63 +238,42 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             protected void onStartLoading() {
                 mLoadingIndicator.setVisibility(View.VISIBLE);
                 mGrid.setVisibility(View.INVISIBLE);
+
+                String discovery  = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
+                if(discovery == null)
+                {
+                    forceLoad();
+                }
+                else
+                {
+                    MovieInfo[] movies = new Gson().fromJson(discovery,MovieInfo[].class);
+                    deliverResult(movies);
+                }
             }
 
             @Nullable
             @Override
             public MovieInfo[] loadInBackground()
             {
-
-                return new MovieInfo[0];
+                // TODO: 06.04.2020 Does this actually work? the inten service runs on a background so it doesn`t block the loader thread?
+                //Intent intent = new Intent(MainActivity.this, SyncDiscoveryDataIntentService.class);
+                //startService(intent);
+                SyncDiscoveryTask.syncCachedDiscoveryData(MainActivity.this);
+                String discovery = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
+                MovieInfo[] movies = new Gson().fromJson(discovery,MovieInfo[].class);
+                return movies;
             }
         };
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<MovieInfo[]> loader, MovieInfo[] movies)
+    public void onLoadFinished(@NonNull Loader<MovieInfo[]> loader, MovieInfo[] data)
     {
         mLoadingIndicator.setVisibility(View.GONE);
-        loadImages(movies);
+        loadImages(data);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<MovieInfo[]> loader) {}
-
-    class DiscoverMoviesTask extends AsyncTask<DiscoveryMode,Void,MovieInfo[]>
-    {
-        @Override
-        protected void onPreExecute() {
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-            mGrid.setVisibility(View.INVISIBLE);
-        }
-
-        @Override
-        protected MovieInfo[] doInBackground(DiscoveryMode... discoveryModes)
-        {
-            String currentCache = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
-
-            // no loads yet
-            if(currentCache == null)
-            {
-                MovieInfo[] popColl = mMovieApi.getMoviesByPopularity();
-                MovieInfo[] ratingColl = mMovieApi.getMoviesByRating();
-
-                String popCollStr = new Gson().toJson(popColl);
-                String rotingCollStr = new Gson().toJson(ratingColl);
-
-                AppPreferences.updateDiscoveryCache(MainActivity.this,popCollStr,rotingCollStr);
-                currentCache = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
-            }
-
-            MovieInfo[] jsonString = new Gson().fromJson(currentCache,MovieInfo[].class);
-            return jsonString;
-        }
-
-        @Override
-        protected void onPostExecute(MovieInfo[] movies) {
-            mLoadingIndicator.setVisibility(View.GONE);
-            loadImages(movies);
-        }
-    }
 
 }
