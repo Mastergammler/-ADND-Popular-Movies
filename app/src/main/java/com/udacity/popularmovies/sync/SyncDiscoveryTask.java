@@ -1,6 +1,7 @@
 package com.udacity.popularmovies.sync;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -13,6 +14,7 @@ import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
 import java.util.concurrent.TimeUnit;
 
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
@@ -59,13 +61,21 @@ public class SyncDiscoveryTask
                 .build();
 
         WorkManager.getInstance(context).enqueue(workRequest);
-
-        WorkManager.getInstance(context).getWorkInfoByIdLiveData(workRequest.getId()).observe(context, new Observer<WorkInfo>(){
+        WorkManager.getInstance(context).getWorkInfoByIdLiveData(workRequest.getId()).observe(getLifecycleOwner(context), new Observer<WorkInfo>(){
             @Override
             public void onChanged(WorkInfo workInfo) {
                 Log.d(SCHEDULED_SYNC_TASK_TAG,"Worker state changed: " + workInfo.getState().toString());
             }
         });
+    }
+
+    private static LifecycleOwner getLifecycleOwner(Context context)
+    {
+        while (!(context instanceof LifecycleOwner))
+        {
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return (LifecycleOwner) context;
     }
 
     public static synchronized void syncCachedDiscoveryData(Context context)

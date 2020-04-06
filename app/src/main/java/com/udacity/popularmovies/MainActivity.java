@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         setPreferredGridView();
         loadMoviesFor(AppPreferences.getLatestDiscoveryMode(this));
+        SyncDiscoveryTask.initialize(this);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
