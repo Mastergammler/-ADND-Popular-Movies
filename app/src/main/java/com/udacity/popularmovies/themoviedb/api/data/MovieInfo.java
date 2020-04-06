@@ -2,7 +2,9 @@ package com.udacity.popularmovies.themoviedb.api.data;
 
 import com.google.gson.Gson;
 
-public class MovieInfo
+import java.io.Serializable;
+
+public class MovieInfo implements Serializable
 {
     public int id;
     public String title;
@@ -17,5 +19,10 @@ public class MovieInfo
     public static MovieInfo parseJson(String json)
     {
         return new Gson().fromJson(json,MovieInfo.class);
+    }
+
+    public static String toJson(MovieInfo info)
+    {
+        return new Gson().toJson(info,MovieInfo.class);
     }
 }

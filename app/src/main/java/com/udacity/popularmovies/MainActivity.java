@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Movie;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,12 +20,14 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
+import com.udacity.popularmovies.themoviedb.api.data.MovieCollection;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
 public class MainActivity extends AppCompatActivity
@@ -217,12 +220,23 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected MovieInfo[] doInBackground(DiscoveryMode... discoveryModes)
         {
-            switch (discoveryModes[0])
+            String currentCache = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
+
+            // no loads yet
+            if(currentCache == null)
             {
-                case USER_RATING_DESC:
-                    return mMovieApi.getMoviesByRating();
-                default:return mMovieApi.getMoviesByPopularity();
+                MovieInfo[] popColl = mMovieApi.getMoviesByPopularity();
+                MovieInfo[] ratingColl = mMovieApi.getMoviesByRating();
+
+                String popCollStr = new Gson().toJson(popColl);
+                String rotingCollStr = new Gson().toJson(ratingColl);
+
+                AppPreferences.updateDiscoveryCache(MainActivity.this,popCollStr,rotingCollStr);
+                currentCache = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
             }
+
+            MovieInfo[] jsonString = new Gson().fromJson(currentCache,MovieInfo[].class);
+            return jsonString;
         }
 
         @Override

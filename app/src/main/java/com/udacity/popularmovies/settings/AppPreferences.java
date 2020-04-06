@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.udacity.popularmovies.DiscoveryMode;
-import com.udacity.popularmovies.MainActivity;
 
 /**
  * Handles the Shared Preferences for the App
@@ -81,11 +80,11 @@ public class AppPreferences
         SharedPreferences prefs = context.getSharedPreferences(CACHING_PREFERENCES_ID,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
-        if( ! isNullOrEmpty(popularMoviesJson))
+        if(isNotNullOrEmpty(popularMoviesJson))
         {
             editor.putString(CP_POPULAR_MOVIES_JSON_KEY,popularMoviesJson);
         }
-        if( ! isNullOrEmpty(highestRatedJson))
+        if(isNotNullOrEmpty(highestRatedJson))
         {
             editor.putString(CP_HIGHEST_RATED_MOVIES_JSON_KEY,highestRatedJson);
         }
@@ -106,7 +105,7 @@ public class AppPreferences
         }
     }
 
-    private static boolean isNullOrEmpty(String string)
+    private static boolean isNotNullOrEmpty(String string)
     {
         return string != null &! string.equals("");
     }

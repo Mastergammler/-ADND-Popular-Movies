@@ -17,4 +17,9 @@ public class MovieCollection
         return new Gson().fromJson(json,MovieCollection.class);
     }
 
+    public static String toJson(MovieCollection collection)
+    {
+        return new Gson().toJson(collection,MovieCollection.class);
+    }
+
 }
