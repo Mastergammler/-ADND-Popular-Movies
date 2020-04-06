@@ -1,4 +1,4 @@
-package com.udacity.popularmovies.networking;
+package com.udacity.popularmovies.sync;
 
 import android.net.Uri;
 import android.util.Log;

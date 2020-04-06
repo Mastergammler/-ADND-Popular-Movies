@@ -2,7 +2,7 @@ package com.udacity.popularmovies.themoviedb.api;
 
 import android.net.Uri;
 
-import com.udacity.popularmovies.networking.NetworkingUtil;
+import com.udacity.popularmovies.sync.NetworkingUtil;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 
 import java.net.URL;

@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     {
         return new AsyncTaskLoader<MovieInfo[]>(this)
         {
-            // TODO: 06.04.2020 Loader runs always, checks for null by himself 
+            // TODO: 06.04.2020 Loader runs always, checks for null by himself
             
             @Override
             protected void onStartLoading() {

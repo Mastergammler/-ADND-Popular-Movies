@@ -115,18 +115,18 @@ public class AppPreferences
         return cachePrefs.getString(keyOf(currentMode),null);
     }
 
-    public static void updateDiscoveryCache(Context context,String popularMoviesJson,String highestRatedJson)
+    public static void updateDiscoveryCache(Context context,DiscoveryCache updatedCache)
     {
         SharedPreferences prefs = context.getSharedPreferences(CACHING_PREFERENCES_ID,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
-        if(isNotNullOrEmpty(popularMoviesJson))
+        if(isNotNullOrEmpty(updatedCache.popularMoviesJsonCache))
         {
-            editor.putString(CP_POPULAR_MOVIES_JSON_KEY,popularMoviesJson);
+            editor.putString(CP_POPULAR_MOVIES_JSON_KEY,updatedCache.popularMoviesJsonCache);
         }
-        if(isNotNullOrEmpty(highestRatedJson))
+        if(isNotNullOrEmpty(updatedCache.highestRatedMoviesJsonCache))
         {
-            editor.putString(CP_HIGHEST_RATED_MOVIES_JSON_KEY,highestRatedJson);
+            editor.putString(CP_HIGHEST_RATED_MOVIES_JSON_KEY,updatedCache.highestRatedMoviesJsonCache);
         }
         editor.apply();
     }
