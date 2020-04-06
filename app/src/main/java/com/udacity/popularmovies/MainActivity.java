@@ -9,8 +9,8 @@ import androidx.loader.content.Loader;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,7 +28,6 @@ import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.udacity.popularmovies.settings.AppPreferences;
-import com.udacity.popularmovies.sync.SyncDiscoveryDataIntentService;
 import com.udacity.popularmovies.sync.SyncDiscoveryTask;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
@@ -69,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mMovieApi = new MovieApi();
 
+        // TEST ONLY
+        AppPreferences.setPreferredGrid(this,DisplayMode.GRID_4x4);
+
+        setPreferredGridView();
         loadMoviesFor(AppPreferences.getLatestDiscoveryMode(this));
     }
     @Override
@@ -101,6 +104,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     //------------
     //  Methods
     //------------
+
+    private void setPreferredGridView()
+    {
+        DisplayMode mode = AppPreferences.getPreferredGrid(this);
+        int currentOrientation = getResources().getConfiguration().orientation;
+
+        if(currentOrientation == Configuration.ORIENTATION_LANDSCAPE)
+        {
+            mGrid.setNumColumns((mode.ordinal() + 1) * 2);
+        }
+        else
+        {
+            mGrid.setNumColumns((mode.ordinal()+1));
+        }
+    }
 
     private void loadMoviesFor(DiscoveryMode mode)
     {
