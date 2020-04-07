@@ -1,4 +1,4 @@
-package com.udacity.popularmovies.moviedetails;
+package com.udacity.popularmovies.ui.moviedetails;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,7 +16,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
 import com.udacity.popularmovies.R;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;

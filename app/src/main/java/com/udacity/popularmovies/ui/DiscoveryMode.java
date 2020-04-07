@@ -1,4 +1,4 @@
-package com.udacity.popularmovies;
+package com.udacity.popularmovies.ui;
 
 /**
  * The the movies get discovered by

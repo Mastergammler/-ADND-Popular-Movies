@@ -11,7 +11,7 @@ public class VideoInfo
     String id;
     String key;
     String site;
-    VideoType type;
+    String type;
 
     // TODO: 07.04.2020 check if that works for all trailer sites?
     public String buildVideoUrl()

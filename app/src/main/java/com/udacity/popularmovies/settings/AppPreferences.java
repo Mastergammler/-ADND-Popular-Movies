@@ -3,8 +3,8 @@ package com.udacity.popularmovies.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.udacity.popularmovies.DiscoveryMode;
-import com.udacity.popularmovies.DisplayMode;
+import com.udacity.popularmovies.ui.DiscoveryMode;
+import com.udacity.popularmovies.ui.DisplayMode;
 import com.udacity.popularmovies.R;
 
 /**

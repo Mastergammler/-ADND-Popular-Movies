@@ -27,7 +27,9 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
-import com.udacity.popularmovies.moviedetails.DetailActivity;
+import com.udacity.popularmovies.ui.DiscoveryMode;
+import com.udacity.popularmovies.ui.DisplayMode;
+import com.udacity.popularmovies.ui.moviedetails.DetailActivity;
 import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.sync.SyncDiscoveryTask;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
@@ -83,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mMovieApi = new MovieApi();
 
         // TEST ONLY
-        AppPreferences.setPreferredGrid(this,DisplayMode.GRID_3x3);
+        AppPreferences.setPreferredGrid(this, DisplayMode.GRID_3x3);
 
         setPreferredGridView();
         loadMoviesFor(AppPreferences.getLatestDiscoveryMode(this));

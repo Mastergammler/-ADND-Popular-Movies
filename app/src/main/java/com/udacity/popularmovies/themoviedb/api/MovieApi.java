@@ -10,6 +10,9 @@ import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieCollection;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
+import com.udacity.popularmovies.themoviedb.api.data.ReviewCollection;
+import com.udacity.popularmovies.themoviedb.api.data.VideoCollection;
+import com.udacity.popularmovies.themoviedb.api.data.VideoInfo;
 
 import java.io.IOException;
 import java.net.URL;
@@ -50,26 +53,38 @@ public class MovieApi implements IMovieDbApi
     }
 
     @Override
-    public String getMoviesByRatingJson() {
+    public String getMoviesByRatingJson()
+    {
         URL url = MovieDbUrlBuilder.getMoviesByUserRatingURL();
         return getMoviesArrayJson(url);
     }
 
     @Override
-    public MovieInfo getMovieDetails(int movieId) {
+    public MovieInfo getMovieDetails(int movieId)
+    {
         URL url = MovieDbUrlBuilder.getMovieDetailURL(movieId);
         String json = getNetworkResponse(url);
         return MovieInfo.parseJson(json);
     }
 
     @Override
-    public Uri[] getVideoLinks(int movieId, boolean trailersOnly) {
-        return new Uri[0];
+    public Uri[] getVideoLinks(int movieId, boolean trailersOnly)
+    {
+        URL url = MovieDbUrlBuilder.getVideosURL(movieId);
+        String json = getNetworkResponse(url);
+        VideoInfo[] infos = VideoCollection.videosFromJson(json);
+        infos = trailersOnly ? filterTrailers(infos) : infos;
+
+        return getVideoUris(infos);
     }
 
     @Override
-    public MovieReview[] getMovieReviews(int movieId) {
-        return new MovieReview[0];
+    public MovieReview[] getMovieReviews(int movieId)
+    {
+        URL url = MovieDbUrlBuilder.getReviewsURL(movieId);
+        String json = getNetworkResponse(url);
+        MovieReview[] reviews = ReviewCollection.reviewsFromJson(json);
+        return reviews;
     }
 
     @Override
@@ -79,13 +94,30 @@ public class MovieApi implements IMovieDbApi
     }
 
     @Override
-    public Uri getMoviePoster(String imagePath, ImageSize size) {
+    public Uri getMoviePoster(String imagePath, ImageSize size)
+    {
         return MovieDbUrlBuilder.getMovieImageURL(imagePath,size);
     }
 
     //------------
     //  HELPERS
     //------------
+
+    private Uri[] getVideoUris(VideoInfo[] videoInfos)
+    {
+        Uri[] uris = new Uri[videoInfos.length];
+        for(int i = 0; i < uris.length; i++)
+        {
+            uris[i] = Uri.parse(videoInfos[i].buildVideoUrl());
+        }
+        return uris;
+    }
+
+    private VideoInfo[] filterTrailers(VideoInfo[] foundVideos)
+    {
+        // TODO: 07.04.2020 implement actual filter
+        return foundVideos;
+    }
 
     private MovieInfo[] getMovies(URL url)
     {

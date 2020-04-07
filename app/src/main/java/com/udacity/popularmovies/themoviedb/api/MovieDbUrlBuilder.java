@@ -34,22 +34,42 @@ class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
     //  Movie Details
     //------------------
 
-    static URL getMovieDetailURL(int id)
+    static URL getMovieDetailURL(int movieId)
     {
-        if(id == 0) return null;
-        Uri uri = Uri.parse(BASE_URL).buildUpon()
-                .path(BASE_PATH)
-                .appendPath(MOVIE_PATH)
-                .appendPath(String.valueOf(id))
-                .appendQueryParameter(API_KEY_QUERY,API_KEY).build();
+        Uri uri = getMovieIdUriWith("",movieId);
         return NetworkingUtil.parseUri(uri);
     }
 
+    static URL getVideosURL(int movieId)
+    {
+        Uri uri = getMovieIdUriWith(MOVIE_VIDEO_PATH,movieId);
+        return NetworkingUtil.parseUri(uri);
+    }
 
+    static URL getReviewsURL(int movieId)
+    {
+        Uri uri = getMovieIdUriWith(MOVIE_REVIEW_PATH,movieId);
+        return NetworkingUtil.parseUri(uri);
+    }
 
     //-------------
     //  Images
     //-------------
+
+    private static Uri getMovieIdUriWith(String endPath,int movieId)
+    {
+        if(movieId == 0) return null;
+        if(endPath == null) endPath = "";
+
+        Uri uri = Uri.parse(BASE_URL).buildUpon()
+                .path(BASE_PATH)
+                .appendPath(MOVIE_PATH)
+                .appendPath(String.valueOf(movieId))
+                .appendPath(endPath)
+                .appendQueryParameter(API_KEY_QUERY,API_KEY)
+                .build();
+        return uri;
+    }
 
     public static Uri getMovieImageURL(String imagePath)
     {
@@ -76,9 +96,9 @@ class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
         return uri;
     }
 
-    //------------
-    //  HELPERS
-    //------------
+    //---------------------
+    //  Helper Functions
+    //---------------------
 
     private static URL getDiscoveryUrlBy(String discoveryMode)
     {

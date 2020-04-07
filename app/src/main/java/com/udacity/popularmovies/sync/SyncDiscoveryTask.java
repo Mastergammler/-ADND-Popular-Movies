@@ -2,11 +2,10 @@ package com.udacity.popularmovies.sync;
 
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.udacity.popularmovies.DiscoveryMode;
+import com.udacity.popularmovies.ui.DiscoveryMode;
 import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.settings.DiscoveryCache;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
