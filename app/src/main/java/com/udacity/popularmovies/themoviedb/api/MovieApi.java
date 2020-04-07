@@ -9,6 +9,7 @@ import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieCollection;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
+import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,6 +36,11 @@ public class MovieApi implements IMovieDbApi
     }
 
     @Override
+    public String getMoviesByPopularityJson() {
+        return null;
+    }
+
+    @Override
     public MovieInfo[] getMoviesByRating()
     {
         URL url = MovieDbUrlBuilder.getMoviesByUserRatingURL();
@@ -42,9 +48,23 @@ public class MovieApi implements IMovieDbApi
     }
 
     @Override
-    public MovieInfo getMovieDetails()
-    {
-        throw new UnsupportedOperationException("Not yet Implemented!");
+    public String getMoviesByRatingJson() {
+        return null;
+    }
+
+    @Override
+    public MovieInfo getMovieDetails(int movieId) {
+        return null;
+    }
+
+    @Override
+    public Uri[] getVideoLinks(int movieId, boolean trailersOnly) {
+        return new String[0];
+    }
+
+    @Override
+    public MovieReview[] getMovieReviews(int movieId) {
+        return new MovieReview[0];
     }
 
     @Override
