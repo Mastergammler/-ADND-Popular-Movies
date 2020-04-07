@@ -36,8 +36,10 @@ public class MovieApi implements IMovieDbApi
     }
 
     @Override
-    public String getMoviesByPopularityJson() {
-        return null;
+    public String getMoviesByPopularityJson()
+    {
+        URL url = MovieDbUrlBuilder.getMoviesByPopularityURL();
+        return getMoviesArrayJson(url);
     }
 
     @Override
@@ -49,17 +51,20 @@ public class MovieApi implements IMovieDbApi
 
     @Override
     public String getMoviesByRatingJson() {
-        return null;
+        URL url = MovieDbUrlBuilder.getMoviesByUserRatingURL();
+        return getMoviesArrayJson(url);
     }
 
     @Override
     public MovieInfo getMovieDetails(int movieId) {
-        return null;
+        URL url = MovieDbUrlBuilder.getMovieDetailURL(movieId);
+        String json = getNetworkResponse(url);
+        return MovieInfo.parseJson(json);
     }
 
     @Override
     public Uri[] getVideoLinks(int movieId, boolean trailersOnly) {
-        return new String[0];
+        return new Uri[0];
     }
 
     @Override
@@ -90,6 +95,11 @@ public class MovieApi implements IMovieDbApi
         if(collection != null) return collection.results;
         return null;
     }
+    private String getMoviesArrayJson(URL url)
+    {
+        return MovieInfo.toJson(getMovies(url));
+    }
+
     private String getNetworkResponse(URL url)
     {
         String jsonResult = null;

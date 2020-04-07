@@ -12,8 +12,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,6 +27,7 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.udacity.popularmovies.moviedetails.DetailActivity;
 import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.sync.SyncDiscoveryTask;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
@@ -214,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
     private void startDetailActivity(MovieInfo info)
     {
-        Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
 
         intent.putExtra(DetailActivity.MOVIE_CONTENT_KEY,info);
 

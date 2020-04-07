@@ -1,17 +1,23 @@
-package com.udacity.popularmovies;
+package com.udacity.popularmovies.moviedetails;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.udacity.popularmovies.R;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
@@ -21,22 +27,16 @@ import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
  * Activity for the detail view of a specific movies
  * Shows the picture as well as additional information
  */
-public class DetailActivity extends AppCompatActivity
+public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieDetails>
 {
     //---------------
     //  Constants
     //---------------
 
     private static final String SCROLL_VIEW_STATE = "scroll-view-state";
-
     public static final String MOVIE_CONTENT_KEY = "movie-content";
-
-    public static final String TITLE_KEY = "title";
-    public static final String OVERVIEW_KEY = "overview";
-    public static final String IMAGE_PATH_KEY = "image-path";
-    public static final String RATING_KEY = "rating";
-    public static final String RELEASE_KEY = "release";
-    public static final String RUNTIME_KEY = "runtime";
+    protected static final String LOADER_PARAM = "loader-param-movie-id";
+    private static final int MOVIE_DETAIL_LOADER_ID = 483748;
 
     //---------------
     //  Members
@@ -94,6 +94,11 @@ public class DetailActivity extends AppCompatActivity
         mPlotSynopsisTextView.setText(info.overview);
         mRatingTextView.setText(formatRatingText(info.vote_average));
         mRuntimeTextView.setText(parseMovieLengthText(info.runtime));
+
+
+        Bundle loaderArgs = new Bundle();
+        loaderArgs.putInt(LOADER_PARAM,info.id);
+        LoaderManager.getInstance(this).initLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,this);
 
         Uri uri = mMovieApi.getMoviePoster(info.poster_path, ImageSize.IMAGE_BIG);
         Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
@@ -176,4 +181,69 @@ public class DetailActivity extends AppCompatActivity
         }
         return 0;
     }
+
+    //---------------------
+    //  Background Loader
+    //--------------------
+
+    @NonNull
+    @Override
+    public Loader<MovieDetails> onCreateLoader(int id, final @Nullable Bundle args) {
+        return new AsyncTaskLoader<MovieDetails>(this){
+
+            private MovieDetails movieDetailsCache;
+
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+                if(movieDetailsCache != null) deliverResult(movieDetailsCache);
+                else
+                {
+                    forceLoad();
+                    // TODO: 07.04.2020 show loading indicator
+                }
+            }
+
+            @Nullable
+            @Override
+            public MovieDetails loadInBackground()
+            {
+                if(args == null)
+                {
+                    Log.w(this.getClass().getSimpleName(),"No parameter specified for the loader!");
+                    return null;
+                }
+                int id = args.getInt(LOADER_PARAM);
+                if(id == 0)
+                {
+                    Log.w(this.getClass().getSimpleName(),"Invalid id specified! Unable to load movie details!");
+                    return null;
+                }
+
+                MovieInfo info = mMovieApi.getMovieDetails(id);
+                return new MovieDetails(info,null,null);
+            }
+
+            @Override
+            public void deliverResult(@Nullable MovieDetails data) {
+                movieDetailsCache = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<MovieDetails> loader, MovieDetails data)
+    {
+        TextView tv = findViewById(R.id.debug_view);
+        tv.setText(data.movieInfo.tagline);
+        tv.append("\n\n" + data.movieInfo.status);
+        tv.append("\n\n" + data.movieInfo.runtime);
+        tv.append("\n\nVideos? :" + data.movieInfo.video);
+    }
+
+
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<MovieDetails> loader) {}
 }

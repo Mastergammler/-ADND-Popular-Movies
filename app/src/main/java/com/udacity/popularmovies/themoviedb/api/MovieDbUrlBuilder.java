@@ -12,26 +12,51 @@ import java.net.URL;
  */
 class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
 {
-    //--------------
-    //  FUNCTIONS
-    //--------------
+    //#################
+    //##  FUNCTIONS  ##
+    //#################
 
-    public static URL getMoviesByPopularityURL()
+    //---------------
+    //  Discovery
+    //---------------
+
+    static URL getMoviesByPopularityURL()
     {
         return getDiscoveryUrlBy(POPULARITY);
     }
 
-    public static URL getMoviesByUserRatingURL()
+    static URL getMoviesByUserRatingURL()
     {
         return getDiscoveryUrlBy(VOTE_AVERAGE);
     }
+
+    //------------------
+    //  Movie Details
+    //------------------
+
+    static URL getMovieDetailURL(int id)
+    {
+        if(id == 0) return null;
+        Uri uri = Uri.parse(BASE_URL).buildUpon()
+                .path(BASE_PATH)
+                .appendPath(MOVIE_PATH)
+                .appendPath(String.valueOf(id))
+                .appendQueryParameter(API_KEY_QUERY,API_KEY).build();
+        return NetworkingUtil.parseUri(uri);
+    }
+
+
+
+    //-------------
+    //  Images
+    //-------------
 
     public static Uri getMovieImageURL(String imagePath)
     {
         return getMovieImageURL(imagePath, ImageSize.IMAGE_MEDIUM);
     }
 
-    public static Uri getMovieImageURL(String imagePath,ImageSize size)
+    static Uri getMovieImageURL(String imagePath,ImageSize size)
     {
         if(imagePath == null || imagePath.equals("")) return null;
         Uri uri = Uri.parse(IMAGE_BASE).buildUpon()

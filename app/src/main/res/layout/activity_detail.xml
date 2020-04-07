@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DetailActivity"
+    tools:context=".moviedetails.DetailActivity"
     android:id="@+id/sv_detail_content">
 
     <LinearLayout
@@ -69,7 +69,7 @@
             android:id="@+id/tv_plot_synopsis"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="28sp"/>
+            android:textSize="18sp"/>
 
         <View
             android:layout_marginRight="10dp"
@@ -77,6 +77,13 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#000000"/>
+
+        <TextView
+            android:id="@+id/debug_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="18sp"/>
     </LinearLayout>
 
 
