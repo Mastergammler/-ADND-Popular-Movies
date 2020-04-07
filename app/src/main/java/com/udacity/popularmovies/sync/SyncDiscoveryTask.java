@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkInfo;
@@ -59,8 +60,7 @@ public class SyncDiscoveryTask
                 .setConstraints(constraints)
                 .addTag(SCHEDULED_SYNC_TASK_TAG)
                 .build();
-
-        WorkManager.getInstance(context).enqueue(workRequest);
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(SCHEDULED_SYNC_TASK_TAG, ExistingPeriodicWorkPolicy.KEEP,workRequest);
         WorkManager.getInstance(context).getWorkInfoByIdLiveData(workRequest.getId()).observe(getLifecycleOwner(context), new Observer<WorkInfo>(){
             @Override
             public void onChanged(WorkInfo workInfo) {

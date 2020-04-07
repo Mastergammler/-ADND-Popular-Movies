@@ -53,9 +53,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private TextView mErrorMessageText;
     private ProgressBar mLoadingIndicator;
 
-    private DragEvent mLastEvent;
-
     private IMovieDbApi mMovieApi;
+
+    private static Bundle mLastSavedInstanceState = new Bundle();
 
     //----------------
     //  Android Init
@@ -73,6 +73,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         {
             mGrid.onRestoreInstanceState(savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
         }
+        else if(mLastSavedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY) != null)
+        {
+            mGrid.onRestoreInstanceState(mLastSavedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
+        }
 
         mErrorMessageText = findViewById(R.id.tv_error_message);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
@@ -89,13 +93,37 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
         outState.putParcelable(GRID_VIEW_SCROLL_POSITION_KEY,mGrid.onSaveInstanceState());
+        mLastSavedInstanceState.putParcelable(GRID_VIEW_SCROLL_POSITION_KEY,mGrid.onSaveInstanceState());
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        if(savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY)!=null)
+        {
+            mGrid.onRestoreInstanceState(savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        onRestoreInstanceState(mLastSavedInstanceState);
+        super.onResume();
     }
 
 
+    @Override
+    protected void onStop() {
+        //onSaveInstanceState(new Bundle());
+        super.onStop();
+    }
 
+    @Override
+    protected void onDestroy() {
 
+        super.onDestroy();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -154,6 +182,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 setTitle(R.string.highest_rated_movies);
                 break;
         }
+        /**
+         * Needs to be on restart loader, else it will not call 'onStartLoading()' when the options items are pressed
+         */
         LoaderManager.getInstance(this).restartLoader(SYNC_DISCOVERY_CACHE_LOADER_ID,null,this);
     }
     private void loadImages(MovieInfo[] movies)

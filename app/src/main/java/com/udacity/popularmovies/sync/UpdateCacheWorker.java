@@ -23,4 +23,5 @@ public class UpdateCacheWorker extends Worker
         SyncDiscoveryTask.syncCachedDiscoveryData(getApplicationContext());
         return Result.success();
     }
+
 }

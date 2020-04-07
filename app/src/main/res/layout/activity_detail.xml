@@ -68,7 +68,7 @@
             android:id="@+id/tv_plot_synopsis"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"/>
+            android:textSize="28sp"/>
 
         <View
             android:layout_marginRight="10dp"
