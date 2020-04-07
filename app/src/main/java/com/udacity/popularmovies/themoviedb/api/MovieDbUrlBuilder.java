@@ -58,7 +58,7 @@ class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
     private static URL getDiscoveryUrlBy(String discoveryMode)
     {
         Uri uri = Uri.parse(BASE_URL).buildUpon()
-                .path(BASE_PATH + DISCOVER_PARAM)
+                .path(BASE_PATH + DISCOVERY_PATH)
                 .appendQueryParameter(API_KEY_QUERY,API_KEY)
                 .appendQueryParameter(SORT_BY_QUERY,discoveryMode).build();
         return NetworkingUtil.parseUri(uri);

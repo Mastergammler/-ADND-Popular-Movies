@@ -16,14 +16,39 @@ public interface IMovieDbApi
     MovieInfo[] getMoviesByPopularity();
 
     /**
+     * Returns a json file of the Movie Array
+     * Json for making caching easier
+     */
+    String getMoviesByPopularityJson();
+
+    /**
      * Returns the list of movies, sorted by rating
      */
     MovieInfo[] getMoviesByRating();
 
     /**
-     * Gets detailed info for a specific movie
+     * Returns the json of the Movie Array
+     * To make caching easier
      */
-    MovieInfo getMovieDetails();
+    String getMoviesByRatingJson();
+
+    /**
+     * Gets detailed info for a specific movie
+     * This is achieved by accessing the movie via its id
+     * And pulling data from movies/id
+     */
+    MovieInfo getMovieDetails(int movieId);
+
+    /**
+     * Gets the video links for the movie with the specified id
+     * It calls the api via movies/id/videos
+     * @param movieId - tmdb movie id
+     * @param trailersOnly - flag weather to filter for trailers
+     * @return null if no trailers / videos where found
+     */
+    String[] getVideoLinks(int movieId, boolean trailersOnly);
+
+
 
     /**
      * Builds the uri for accessing the poster image of a specific movie

@@ -7,11 +7,24 @@ public interface ApiConstants
 {
     String BASE_URL = "https://api.themoviedb.org/";
     String BASE_PATH = "3/";
-    String DISCOVER_PARAM = "discover/movie";
     String API_KEY_QUERY = "api_key";
+
+    //-------------
+    //  Discovery
+    //-------------
+
+    String DISCOVERY_PATH = "discover/movie";
     String SORT_BY_QUERY = "sort_by";
     String POPULARITY = "popularity.desc";
     String VOTE_AVERAGE = "vote_average.desc";
+
+    //-----------------
+    //  Movie Details
+    //-----------------
+
+    String MOVIE_PATH = "movie";
+    String MOVIE_VIDEO_PATH = "videos";
+    String MOVIE_REVIEW_PATH = "reviews";
 
     //**************
     //**  IMAGES  **
