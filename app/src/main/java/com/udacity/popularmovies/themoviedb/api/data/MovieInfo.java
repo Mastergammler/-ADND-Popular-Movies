@@ -19,6 +19,7 @@ public class MovieInfo implements Serializable
     public String status;
     public String tagline;
     public int revenue;
+    public int budget;
 
     public static MovieInfo parseJson(String json) { return new Gson().fromJson(json,MovieInfo.class); }
     public static MovieInfo[] parseJsonArray(String json){return new Gson().fromJson(json,MovieInfo[].class);}

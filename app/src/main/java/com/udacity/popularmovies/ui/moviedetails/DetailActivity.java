@@ -21,6 +21,7 @@ import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
+import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
 
 /**
  * Activity for the detail view of a specific movies
@@ -220,7 +221,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                 }
 
                 MovieInfo info = mMovieApi.getMovieDetails(id);
-                return new MovieDetails(info,null,null);
+                Uri[] trailerUrls = mMovieApi.getVideoLinks(id,true);
+                MovieReview[] reviews = mMovieApi.getMovieReviews(id);
+
+                return new MovieDetails(info,reviews,trailerUrls);
             }
 
             @Override
@@ -235,10 +239,18 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     public void onLoadFinished(@NonNull Loader<MovieDetails> loader, MovieDetails data)
     {
         TextView tv = findViewById(R.id.debug_view);
-        tv.setText(data.movieInfo.tagline);
-        tv.append("\n\n" + data.movieInfo.status);
-        tv.append("\n\n" + data.movieInfo.runtime);
-        tv.append("\n\nVideos? :" + data.movieInfo.video);
+        tv.setText(data.movieInfo.tagline != null ? data.movieInfo.tagline : "");
+        tv.append("\n" + data.movieInfo.status);
+        tv.append("\n" + data.movieInfo.runtime);
+        tv.append("\n" + data.movieInfo.revenue + "$$$$$");
+        for(Uri uri : data.movieTrailers)
+        {
+            tv.append("\n" + uri.toString());
+        }
+        for(MovieReview rev : data.movieReviews)
+        {
+            tv.append("\n" + rev.author + " : " + rev.getContentPreview());
+        }
     }
 
 

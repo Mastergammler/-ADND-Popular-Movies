@@ -18,10 +18,15 @@ public class MovieReview
     //  Api Values
     //--------------
 
-    String id;
-    String author;
-    String content;
-    String url;
+    public String id;
+    public String author;
+    public String content;
+    public String url;
+
+    public String getContentPreview()
+    {
+        return content.substring(0,15) + " ...";
+    }
 
 
 }

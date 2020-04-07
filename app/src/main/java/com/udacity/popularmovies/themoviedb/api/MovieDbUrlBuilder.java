@@ -36,7 +36,7 @@ class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
 
     static URL getMovieDetailURL(int movieId)
     {
-        Uri uri = getMovieIdUriWith("",movieId);
+        Uri uri = getMovieIdUriWith(null,movieId);
         return NetworkingUtil.parseUri(uri);
     }
 
@@ -59,15 +59,16 @@ class MovieDbUrlBuilder implements ApiConfiguration, ApiConstants
     private static Uri getMovieIdUriWith(String endPath,int movieId)
     {
         if(movieId == 0) return null;
-        if(endPath == null) endPath = "";
 
-        Uri uri = Uri.parse(BASE_URL).buildUpon()
+        Uri.Builder builder = Uri.parse(BASE_URL).buildUpon()
                 .path(BASE_PATH)
                 .appendPath(MOVIE_PATH)
-                .appendPath(String.valueOf(movieId))
-                .appendPath(endPath)
-                .appendQueryParameter(API_KEY_QUERY,API_KEY)
-                .build();
+                .appendPath(String.valueOf(movieId));
+        if(endPath != null)
+        {
+            builder.appendPath(endPath);
+        }
+        Uri  uri = builder.appendQueryParameter(API_KEY_QUERY,API_KEY).build();
         return uri;
     }
 

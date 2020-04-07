@@ -16,6 +16,6 @@ public class VideoInfo
     // TODO: 07.04.2020 check if that works for all trailer sites?
     public String buildVideoUrl()
     {
-        return URL_START + site + ".com/" + key;
+        return URL_START + site + ".com/watch?v=" + key;
     }
 }
