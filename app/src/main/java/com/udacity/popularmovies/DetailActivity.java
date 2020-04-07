@@ -1,11 +1,13 @@
 package com.udacity.popularmovies;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -23,6 +25,8 @@ public class DetailActivity extends AppCompatActivity
     //  Constants
     //---------------
 
+    private static final String SCROLL_VIEW_STATE = "scroll-view-state";
+
     public static final String TITLE_KEY = "title";
     public static final String OVERVIEW_KEY = "overview";
     public static final String IMAGE_PATH_KEY = "image-path";
@@ -34,6 +38,7 @@ public class DetailActivity extends AppCompatActivity
     //  Members
     //---------------
 
+    private ScrollView mContentView;
     private TextView mTitleTextView;
     private TextView mRatingTextView;
     private TextView mPlotSynopsisTextView;
@@ -49,6 +54,7 @@ public class DetailActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
+        mContentView = findViewById(R.id.sv_detail_content);
         mTitleTextView = findViewById(R.id.tv_movie_title);
         mRatingTextView = findViewById(R.id.tv_rating_average);
         mPlotSynopsisTextView = findViewById(R.id.tv_plot_synopsis);
@@ -61,9 +67,22 @@ public class DetailActivity extends AppCompatActivity
         initViewValues();
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SCROLL_VIEW_STATE,mContentView.getTop());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mContentView.setTop(savedInstanceState.getInt(SCROLL_VIEW_STATE));
+    }
+
     private void initViewValues()
     {
         Intent intent = getIntent();
+
 
         mTitleTextView.setText(getStringExtra(intent, TITLE_KEY));
         mReleaseDateTextView.setText(formatDateText(getStringExtra(intent, RELEASE_KEY)));
