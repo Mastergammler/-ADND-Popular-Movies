@@ -11,9 +11,11 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
+import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
 /**
  * Activity for the detail view of a specific movies
@@ -26,6 +28,8 @@ public class DetailActivity extends AppCompatActivity
     //---------------
 
     private static final String SCROLL_VIEW_STATE = "scroll-view-state";
+
+    public static final String MOVIE_CONTENT_KEY = "movie-content";
 
     public static final String TITLE_KEY = "title";
     public static final String OVERVIEW_KEY = "overview";
@@ -83,14 +87,15 @@ public class DetailActivity extends AppCompatActivity
     {
         Intent intent = getIntent();
 
+        MovieInfo info = (MovieInfo) intent.getSerializableExtra(MOVIE_CONTENT_KEY);
 
-        mTitleTextView.setText(getStringExtra(intent, TITLE_KEY));
-        mReleaseDateTextView.setText(formatDateText(getStringExtra(intent, RELEASE_KEY)));
-        mPlotSynopsisTextView.setText(getStringExtra(intent, OVERVIEW_KEY));
-        mRatingTextView.setText(formatRatingText(getFloatExtra(intent, RATING_KEY)));
-        mRuntimeTextView.setText(parseMovieLengthText(getIntExtra(intent, RUNTIME_KEY)));
+        mTitleTextView.setText(info.title);
+        mReleaseDateTextView.setText(formatDateText(info.release_date));
+        mPlotSynopsisTextView.setText(info.overview);
+        mRatingTextView.setText(formatRatingText(info.vote_average));
+        mRuntimeTextView.setText(parseMovieLengthText(info.runtime));
 
-        Uri uri = mMovieApi.getMoviePoster(getStringExtra(intent, IMAGE_PATH_KEY), ImageSize.IMAGE_MEDIUM);
+        Uri uri = mMovieApi.getMoviePoster(info.poster_path, ImageSize.IMAGE_BIG);
         Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
     }
 

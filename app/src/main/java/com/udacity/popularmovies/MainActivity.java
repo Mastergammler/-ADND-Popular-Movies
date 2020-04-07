@@ -216,12 +216,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     {
         Intent intent = new Intent(MainActivity.this,DetailActivity.class);
 
-        intent.putExtra(DetailActivity.TITLE_KEY,info.title);
-        intent.putExtra(DetailActivity.OVERVIEW_KEY,info.overview);
-        intent.putExtra(DetailActivity.RELEASE_KEY,info.release_date);
-        intent.putExtra(DetailActivity.IMAGE_PATH_KEY,info.poster_path);
-        intent.putExtra(DetailActivity.RATING_KEY,info.vote_average);
-        intent.putExtra(DetailActivity.RUNTIME_KEY,info.runtime);
+        intent.putExtra(DetailActivity.MOVIE_CONTENT_KEY,info);
+
+        //intent.putExtra(DetailActivity.TITLE_KEY,info.title);
+        //intent.putExtra(DetailActivity.OVERVIEW_KEY,info.overview);
+        //intent.putExtra(DetailActivity.RELEASE_KEY,info.release_date);
+        //intent.putExtra(DetailActivity.IMAGE_PATH_KEY,info.poster_path);
+        //intent.putExtra(DetailActivity.RATING_KEY,info.vote_average);
+        //intent.putExtra(DetailActivity.RUNTIME_KEY,info.runtime);
 
         startActivity(intent);
     }

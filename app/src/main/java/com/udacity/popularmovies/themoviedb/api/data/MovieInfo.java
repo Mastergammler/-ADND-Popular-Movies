@@ -16,13 +16,11 @@ public class MovieInfo implements Serializable
     public String release_date;
     public int runtime;
 
-    public static MovieInfo parseJson(String json)
-    {
-        return new Gson().fromJson(json,MovieInfo.class);
-    }
-
+    public static MovieInfo parseJson(String json) { return new Gson().fromJson(json,MovieInfo.class); }
+    public static MovieInfo[] parseJsonArray(String json){return new Gson().fromJson(json,MovieInfo[].class);}
     public static String toJson(MovieInfo info)
     {
         return new Gson().toJson(info,MovieInfo.class);
     }
+    public static String toJson(MovieInfo[] movies){return new Gson().toJson(movies,MovieInfo[].class);}
 }
