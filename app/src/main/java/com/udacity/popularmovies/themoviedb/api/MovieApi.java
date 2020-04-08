@@ -108,7 +108,7 @@ public class MovieApi implements IMovieDbApi
         Uri[] uris = new Uri[videoInfos.length];
         for(int i = 0; i < uris.length; i++)
         {
-            uris[i] = Uri.parse(videoInfos[i].buildVideoUrl());
+            uris[i] = videoInfos[i].buildVideoUrl();
         }
         return uris;
     }
