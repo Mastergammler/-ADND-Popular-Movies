@@ -25,7 +25,11 @@ public class MovieReview
 
     public String getContentPreview()
     {
-        return content.substring(0,15) + " ...";
+        if(content.length() >= 15)
+        {
+            return content.substring(0,15) + " ...";
+        }
+        else return content;
     }
 
 

@@ -8,6 +8,7 @@ import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,12 +17,18 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 import com.udacity.popularmovies.R;
+import com.udacity.popularmovies.favouritesdb.AppExecutors;
+import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
+import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
+
+import java.io.IOException;
 
 /**
  * Activity for the detail view of a specific movies
@@ -236,7 +243,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<MovieDetails> loader, MovieDetails data)
+    public void onLoadFinished(@NonNull Loader<MovieDetails> loader, final MovieDetails data)
     {
         TextView tv = findViewById(R.id.debug_view);
         tv.setText(data.movieInfo.tagline != null ? data.movieInfo.tagline : "");
@@ -251,6 +258,30 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         {
             tv.append("\n" + rev.author + " : " + rev.getContentPreview());
         }
+
+        AppExecutors.getInstance().runOnDiskIOThread(
+                new Runnable(){
+                    @Override
+                    public void run()
+                    {
+                        Uri uri = mMovieApi.getMoviePoster(data.movieInfo.poster_path, ImageSize.IMAGE_MEDIUM);
+                        Bitmap bitmap = null;
+                        try
+                        {
+                            bitmap = Picasso.get().load(uri).get();
+                        }
+                        catch (IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+
+                        FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
+                        db.favouritesDao().saveMovieAsFavourite(
+                                new MovieData(data.movieInfo,bitmap)
+                        );
+                    }
+                }
+        );
     }
 
 

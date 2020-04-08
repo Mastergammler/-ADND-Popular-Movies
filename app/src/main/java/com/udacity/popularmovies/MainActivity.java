@@ -27,6 +27,8 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
+import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
 import com.udacity.popularmovies.ui.DiscoveryMode;
 import com.udacity.popularmovies.ui.DisplayMode;
 import com.udacity.popularmovies.ui.moviedetails.DetailActivity;
@@ -36,6 +38,9 @@ import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieInfo[]>
 {
@@ -145,6 +150,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.action_sort_by_rating:
                 selectedMode = DiscoveryMode.USER_RATING_DESC;
                 break;
+            case R.id.action_sort_by_favourites:
+                selectedMode = DiscoveryMode.FAVOURITES;
+                break;
             default: return super.onOptionsItemSelected(item);
         }
 
@@ -181,6 +189,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 break;
             case USER_RATING_DESC:
                 setTitle(R.string.highest_rated_movies);
+                break;
+            case FAVOURITES:
+                setTitle(R.string.liked_movies);
                 break;
         }
         /**
@@ -331,11 +342,28 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             public MovieInfo[] loadInBackground()
             {
                 // TODO: 06.04.2020 Does this actually work? the inten service runs on a background so it doesn`t block the loader thread?
-                //Intent intent = new Intent(MainActivity.this, SyncDiscoveryDataIntentService.class);
-                //startService(intent);
-                SyncDiscoveryTask.syncCachedDiscoveryData(MainActivity.this);
-                String discovery = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
-                MovieInfo[] movies = new Gson().fromJson(discovery,MovieInfo[].class);
+                DiscoveryMode mode = AppPreferences.getLatestDiscoveryMode(MainActivity.this);
+                MovieInfo[] movies = null;
+
+                if(mode == DiscoveryMode.FAVOURITES)
+                {
+                    List<FullMovieInfo> moviesFromDb = FavouritesDatabase.getInstance(MainActivity.this).favouritesDao().getFavouriteMovies();
+                    List<MovieInfo> movieInfos = new LinkedList<>();
+                    for(FullMovieInfo info : moviesFromDb)
+                    {
+                        MovieInfo movie = new MovieInfo();
+                        movie.poster_path = info.movieData.getMovie_poster_path();
+                        movie.title = info.movieData.getTitle();
+                        movieInfos.add(movie);
+                    }
+                    movies = movieInfos.toArray(new MovieInfo[movieInfos.size()]);
+                }
+                else
+                {
+                    SyncDiscoveryTask.syncCachedDiscoveryData(MainActivity.this);
+                    String discovery = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
+                    movies = new Gson().fromJson(discovery,MovieInfo[].class);
+                }
                 return movies;
             }
         };
