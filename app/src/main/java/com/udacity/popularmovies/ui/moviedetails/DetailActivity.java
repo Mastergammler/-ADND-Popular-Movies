@@ -184,11 +184,14 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     }
     private void loadDataFromSerializable(MovieInfo info)
     {
-        DetailViewModelFactory factory = new DetailViewModelFactory(FavouritesDatabase.getInstance(this),info.id);
-        DetailViewModel vm = factory.create(DetailViewModel.class);
+        FavouritesDatabase db = FavouritesDatabase.getInstance(getApplicationContext());
+        DetailViewModelFactory factory = new DetailViewModelFactory(db,info.id);
+        final DetailViewModel vm = new ViewModelProvider(DetailActivity.this,factory).get(DetailViewModel.class);
         vm.getMovieData().observe(this, new Observer<FullMovieInfo>(){
             @Override
             public void onChanged(FullMovieInfo fullMovieInfo) {
+                vm.getMovieData().removeObserver(this);
+
                 if(fullMovieInfo == null)
                 {
                     mMovieLiked = false;
@@ -216,12 +219,14 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     }
     private void loadDataFromViewModel(int movieId)
     {
-        DetailViewModelFactory factory = new DetailViewModelFactory(FavouritesDatabase.getInstance(this),movieId);
-        DetailViewModel vm = factory.create(DetailViewModel.class);
+        FavouritesDatabase db = FavouritesDatabase.getInstance(getApplicationContext());
+        DetailViewModelFactory factory = new DetailViewModelFactory(db,movieId);
+        final DetailViewModel vm = new ViewModelProvider(this,factory).get(DetailViewModel.class);
         vm.getMovieData().observe(this, new Observer<FullMovieInfo>(){
             @Override
             public void onChanged(FullMovieInfo fullMovieInfo)
             {
+                vm.getMovieData().removeObserver(this);
                 MovieData data = fullMovieInfo.movieData;
                 mTitleTextView.setText(data.getTitle());
                 mReleaseDateTextView.setText(formatDateText(data.getRelease_date()));
