@@ -3,14 +3,12 @@ package com.udacity.popularmovies.ui.moviedetails;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 
-import android.content.ClipData;
 import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
@@ -27,8 +25,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
-import com.udacity.popularmovies.MainActivity;
 import com.udacity.popularmovies.R;
 import com.udacity.popularmovies.favouritesdb.AppExecutors;
 import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
@@ -43,7 +39,6 @@ import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
 import com.udacity.popularmovies.themoviedb.api.data.VideoInfo;
-import com.udacity.popularmovies.ui.MainViewModel;
 
 import java.io.IOException;
 
@@ -59,7 +54,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     private static final int MOVIE_DETAIL_LOADER_ID = 483748;
     protected static final String LOADER_PARAM = "loader-param-movie-id";
-    protected static final String LOADER_PARAM_SAVE_TO_DB = "loader-save-to-db";
+    protected static final String LOADER_PARAM_SAVE_OR_DELETE = "loader-save-to-db";
 
     private static final String TAG = DetailActivity.class.getSimpleName();
     private static final String SCROLL_VIEW_STATE = "scroll-view-state";
@@ -104,7 +99,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         mReleaseDateTextView = findViewById(R.id.tv_release_year);
         mPosterView = findViewById(R.id.iv_movie_poster);
         mRuntimeTextView = findViewById(R.id.tv_runtime);
-        //mLikeMenuItem = findViewById(R.id.action_like);
 
         mMovieApi = new MovieApi();
 
@@ -143,11 +137,13 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         {
             case R.id.action_like:
                 Bundle loaderArgs = new Bundle();
+                mMovieLiked = !mMovieLiked;
                 loaderArgs.putInt(LOADER_PARAM,mMovieId);
                 // TODO: 09.04.2020 case for delete
-                loaderArgs.putBoolean(LOADER_PARAM_SAVE_TO_DB,true);
+                loaderArgs.putBoolean(LOADER_PARAM_SAVE_OR_DELETE,mMovieLiked);
                 LoaderManager.getInstance(this).restartLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,this);
-                mMovieLiked = !mMovieLiked;
+
+
                 String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
                 item.setTitle(title);
                 return true;
@@ -365,14 +361,35 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
             {
                 movieDetailsCache = data;
 
-                if(args != null && args.containsKey(LOADER_PARAM_SAVE_TO_DB))
+                if(args != null && args.containsKey(LOADER_PARAM_SAVE_OR_DELETE))
                 {
-                    if(args.getBoolean(LOADER_PARAM_SAVE_TO_DB))
+                    if(args.getBoolean(LOADER_PARAM_SAVE_OR_DELETE))
                     {
                         saveResultToDb(data);
                     }
+                    else
+                    {
+                        deleteResult(data);
+                    }
                 }
                 super.deliverResult(data);
+            }
+
+            private void deleteResult(final MovieDetails data)
+            {
+                AppExecutors.getInstance().runOnDiskIOThread(
+                        new Runnable(){
+                            @Override
+                            public void run() {
+                                int movieId = data.movieInfo.id;
+                                FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
+                                int amount = db.favouritesDao().deleteCover(movieId);
+                                int amount2 = db.favouritesDao().deleteVideos(movieId);
+                                int amount3 = db.favouritesDao().deleteMovieFromFavourites(movieId);
+                                int amount4 = db.favouritesDao().deleteReviews(movieId);
+                            }
+                        }
+                );
             }
 
             private void saveResultToDb(final MovieDetails data)
