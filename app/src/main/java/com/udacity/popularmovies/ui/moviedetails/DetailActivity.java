@@ -12,6 +12,8 @@ import androidx.loader.content.Loader;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -192,8 +194,8 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     }
     private void loadDataFromViewModel(int movieId)
     {
-        DetailViewModelFactory factor = new DetailViewModelFactory(FavouritesDatabase.getInstance(this),movieId);
-        DetailViewModel vm = factor.create(DetailViewModel.class);
+        DetailViewModelFactory factory = new DetailViewModelFactory(FavouritesDatabase.getInstance(this),movieId);
+        DetailViewModel vm = factory.create(DetailViewModel.class);
         vm.getMovieData().observe(this, new Observer<FullMovieInfo>(){
             @Override
             public void onChanged(FullMovieInfo fullMovieInfo)
@@ -203,7 +205,8 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                 mReleaseDateTextView.setText(formatDateText(data.getRelease_date()));
 
                 Uri uri = mMovieApi.getMoviePoster(data.getMovie_poster_path(), ImageSize.IMAGE_BIG);
-                Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
+                Drawable w185 = new BitmapDrawable(getResources(),fullMovieInfo.cover.getMoviePosterW185());
+                Picasso.get().load(uri).placeholder(R.drawable.placeholder).error(w185).into(mPosterView);
             }
         });
     }
