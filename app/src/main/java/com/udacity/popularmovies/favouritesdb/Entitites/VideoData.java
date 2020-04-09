@@ -24,7 +24,7 @@ public class VideoData
     public VideoData(int movieId,VideoInfo info)
     {
         movie_id = movieId;
-        type = info.type;
+        type = VideoType.toEnum(info.getType());
         title = info.name;
         uri = info.buildVideoUrl();
     }

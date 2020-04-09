@@ -16,18 +16,29 @@ public class VideoInfo
         this.key = key;
         this.site = site;
         this.name = name;
-        this.type = VideoType.toEnum(type);
+        this.type =type;
+        this.typeEnum = VideoType.toEnum(type);
     }
 
     public String id;
     public String key;
     public String site;
     public String name;
-    public VideoType type;
+    private String type;
+    public VideoType typeEnum;
 
     // TODO: 07.04.2020 check if that works for all trailer sites?
     public Uri buildVideoUrl()
     {
         return Uri.parse(URL_START + site + ".com/watch?v=" + key);
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+        this.typeEnum = VideoType.toEnum(type);
     }
 }

@@ -26,9 +26,9 @@ public interface MovieDataDao
     @Insert
     void saveMovieAsFavourite(MovieData info);
     @Insert
-    void saveReviews(ReviewData data);
+    void saveReviews(ReviewData[] data);
     @Insert
-    void saveVideos(VideoData data);
+    void saveVideos(VideoData[] data);
     @Insert
     void saveCover(MovieCover cover);
 

@@ -68,14 +68,14 @@ public class MovieApi implements IMovieDbApi
     }
 
     @Override
-    public Uri[] getVideoLinks(int movieId, boolean trailersOnly)
+    public VideoInfo[] getVideoLinks(int movieId, boolean trailersOnly)
     {
         URL url = MovieDbUrlBuilder.getVideosURL(movieId);
         String json = getNetworkResponse(url);
         VideoInfo[] infos = VideoCollection.videosFromJson(json);
         infos = trailersOnly ? filterTrailers(infos) : infos;
 
-        return getVideoUris(infos);
+        return infos;
     }
 
     @Override

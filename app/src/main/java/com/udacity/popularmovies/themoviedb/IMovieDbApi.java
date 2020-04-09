@@ -5,6 +5,7 @@ import android.net.Uri;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
+import com.udacity.popularmovies.themoviedb.api.data.VideoInfo;
 
 /**
  * Api access for themoviedb api
@@ -47,7 +48,7 @@ public interface IMovieDbApi
      * @param trailersOnly - flag weather to filter for trailers
      * @return null if no trailers / videos where found
      */
-    Uri[] getVideoLinks(int movieId, boolean trailersOnly);
+    VideoInfo[] getVideoLinks(int movieId, boolean trailersOnly);
 
     /**
      * Gets the movie reviews for the specific movie

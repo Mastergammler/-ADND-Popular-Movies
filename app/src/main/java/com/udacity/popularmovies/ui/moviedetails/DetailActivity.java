@@ -34,12 +34,15 @@ import com.udacity.popularmovies.favouritesdb.AppExecutors;
 import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
+import com.udacity.popularmovies.favouritesdb.Entitites.ReviewData;
+import com.udacity.popularmovies.favouritesdb.Entitites.VideoData;
 import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
+import com.udacity.popularmovies.themoviedb.api.data.VideoInfo;
 import com.udacity.popularmovies.ui.MainViewModel;
 
 import java.io.IOException;
@@ -346,7 +349,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                 }
 
                 MovieInfo info = mMovieApi.getMovieDetails(id);
-                Uri[] trailerUrls = mMovieApi.getVideoLinks(id,true);
+                VideoInfo[] trailerUrls = mMovieApi.getVideoLinks(id,true);
                 MovieReview[] reviews = mMovieApi.getMovieReviews(id);
 
                 return new MovieDetails(info,reviews,trailerUrls);
@@ -385,18 +388,33 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                                     e.printStackTrace();
                                 }
 
-                                FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
+                                int movieId = data.movieInfo.id;
+                                ReviewData[] reviews = new ReviewData[data.movieReviews.length];
+                                VideoData[] videos = new VideoData[data.movieTrailers.length];
 
+                                for(int i = 0; i < data.movieReviews.length; i++)
+                                {
+                                    reviews[i] = new ReviewData(movieId,data.movieReviews[i]);
+                                }
+                                for(int i = 0; i < data.movieTrailers.length; i++)
+                                {
+                                    videos[i] = new VideoData(movieId,data.movieTrailers[i]);
+                                }
+
+
+                                FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
                                 try
                                 {
+                                    db.favouritesDao().saveReviews(reviews);
+                                    db.favouritesDao().saveVideos(videos);
                                     db.favouritesDao().saveMovieAsFavourite(new MovieData(data.movieInfo));
-                                    db.favouritesDao().saveCover(new MovieCover(data.movieInfo.id,bitmap));
+                                    db.favouritesDao().saveCover(new MovieCover(movieId,bitmap));
                                 }
                                 catch (SQLiteConstraintException e)
                                 {
-                                    e.printStackTrace();
                                     // Happens if for some reason it's tried to resave the same object
                                     // That means that the object is already in the db, so there is nothing to do
+                                    e.printStackTrace();
                                 }
 
                             }
@@ -414,9 +432,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         tv.append("\n" + data.movieInfo.status);
         tv.append("\n" + data.movieInfo.runtime);
         tv.append("\n" + data.movieInfo.revenue + "$$$$$");
-        for(Uri uri : data.movieTrailers)
+        for(VideoInfo uri : data.movieTrailers)
         {
-            tv.append("\n" + uri.toString());
+            tv.append("\n" + uri.buildVideoUrl().toString());
         }
         for(MovieReview rev : data.movieReviews)
         {
