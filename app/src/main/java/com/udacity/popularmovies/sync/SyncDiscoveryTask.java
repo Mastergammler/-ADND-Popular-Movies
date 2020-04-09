@@ -88,14 +88,21 @@ public class SyncDiscoveryTask
         }
         else
         {
-            MovieInfo[] popularMovies = api.getMoviesByPopularity();
-            MovieInfo[] bestRatedMovies = api.getMoviesByRating();
+            String popularMovies = api.getMoviesByPopularityJson();
+            String bestRatedMovies = api.getMoviesByRatingJson();
 
-            // TODO: 06.04.2020 fix this when api returns strings
-            DiscoveryCache cache = new DiscoveryCache(
-                    new Gson().toJson(popularMovies),
-                    new Gson().toJson(bestRatedMovies)
-            );
+            /**
+             * The json string can be 'null' when an http error occurs (IO exception)
+             * That can lead to falsely write data into the preferences
+             * and prevent updating the movies At the first start
+             */
+            if(popularMovies == null || popularMovies.equals("null")
+                || bestRatedMovies == null || bestRatedMovies.equals("null"))
+            {
+                return;
+            }
+
+            DiscoveryCache cache = new DiscoveryCache(popularMovies,bestRatedMovies);
             AppPreferences.updateDiscoveryCache(context,cache);
         }
     }

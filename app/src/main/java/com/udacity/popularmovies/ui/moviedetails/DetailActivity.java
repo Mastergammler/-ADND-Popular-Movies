@@ -118,7 +118,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         }
     }
 
-
     private void loadDataFromSerializable(MovieInfo info)
     {
         mTitleTextView.setText(info.title);
