@@ -112,7 +112,7 @@ public class AppPreferences
         SharedPreferences cachePrefs = context.getSharedPreferences(CACHING_PREFERENCES_ID,Context.MODE_PRIVATE);
         int discoveryOrdinal = userPrefs.getInt(UP_LATEST_DISCOVERY_MODE_KEY,DEFAULT_DISCOVERY_MODE);
         DiscoveryMode currentMode = DiscoveryMode.of(discoveryOrdinal);
-        if(currentMode == DiscoveryMode.FAVOURITES) return null;
+        if(currentMode == DiscoveryMode.FAVOURITES) return "non-empty-string";
         return cachePrefs.getString(keyOf(currentMode),null);
     }
 

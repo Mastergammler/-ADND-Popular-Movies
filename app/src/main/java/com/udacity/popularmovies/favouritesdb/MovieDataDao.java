@@ -7,6 +7,7 @@ import com.udacity.popularmovies.favouritesdb.Entitites.VideoData;
 
 import java.util.List;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
@@ -15,7 +16,7 @@ import androidx.room.Query;
 public interface MovieDataDao
 {
     @Query("SELECT * FROM movie_data ORDER BY user_rating")
-    List<FullMovieInfo> getFavouriteMovies();
+    LiveData<List<FullMovieInfo>> getFavouriteMovies();
 
     @Insert
     void saveMovieAsFavourite(MovieData info);

@@ -8,4 +8,5 @@
     <string name="error_message">Unable to load movies from the api. Is a network connection available?</string>
     <string name="action_favourites">Liked</string>
     <string name="liked_movies">Movies you liked</string>
+    <string name="error_not_loaded_from_db">The movies where not yet loaded from db.</string>
 </resources>
