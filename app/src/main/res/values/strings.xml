@@ -9,4 +9,6 @@
     <string name="action_favourites">Liked</string>
     <string name="liked_movies">Movies you liked</string>
     <string name="error_not_loaded_from_db">No liked movies are saved in the db.</string>
+    <string name="action_like">Like</string>
+    <string name="action_unlike">Unlike</string>
 </resources>

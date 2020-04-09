@@ -9,11 +9,15 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -43,29 +47,41 @@ import java.io.IOException;
 public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieDetails>
 {
     //---------------
-    //  Constants
+    //   Constants
     //---------------
 
+    private static final int MOVIE_DETAIL_LOADER_ID = 483748;
+    protected static final String LOADER_PARAM = "loader-param-movie-id";
+    protected static final String LOADER_PARAM_SAVE_TO_DB = "loader-save-to-db";
+
+    private static final String TAG = DetailActivity.class.getSimpleName();
     private static final String SCROLL_VIEW_STATE = "scroll-view-state";
+
     public static final String MOVIE_CONTENT_KEY = "movie-content";
     public static final String MOVIE_ID_KEY = "movie-id";
-    protected static final String LOADER_PARAM = "loader-param-movie-id";
-    private static final int MOVIE_DETAIL_LOADER_ID = 483748;
-    private static final String TAG = DetailActivity.class.getSimpleName();
 
     //---------------
-    //  Members
+    //    Members
     //---------------
 
-    private ScrollView mContentView;
+    private boolean mMovieLiked = false;
+
+    private int mMovieId;
+
     private TextView mTitleTextView;
     private TextView mRatingTextView;
     private TextView mPlotSynopsisTextView;
     private TextView mReleaseDateTextView;
     private TextView mRuntimeTextView;
+
+    private ScrollView mContentView;
     private ImageView mPosterView;
 
     private IMovieDbApi mMovieApi;
+
+    //#################
+    //##  LIFECYCLE  ##
+    //#################
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -85,39 +101,80 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
         initViewValues();
     }
-
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SCROLL_VIEW_STATE,mContentView.getTop());
     }
-
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mContentView.setTop(savedInstanceState.getInt(SCROLL_VIEW_STATE));
     }
 
+    //############
+    //##  MENU  ##
+    //############
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = new MenuInflater(this);
+        inflater.inflate(R.menu.detail_activity,menu);
+        MenuItem item = menu.findItem(R.id.action_like);
+        String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
+        item.setTitle(title);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        switch(item.getItemId())
+        {
+            case R.id.action_like:
+                Bundle loaderArgs = new Bundle();
+                loaderArgs.putInt(LOADER_PARAM,mMovieId);
+                // TODO: 09.04.2020 case for delete
+                loaderArgs.putBoolean(LOADER_PARAM_SAVE_TO_DB,true);
+                LoaderManager.getInstance(this).restartLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,this);
+                mMovieLiked = !mMovieLiked;
+                String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
+                item.setTitle(title);
+                return true;
+            default: return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //------------
+    //  HELPERS
+    //------------
+
     private void initViewValues()
     {
         Intent intent = getIntent();
 
+        // TODO: 09.04.2020 this is not how liked is determined, this just represents the context we come from
         if(intent.hasExtra(MOVIE_CONTENT_KEY))
         {
             MovieInfo info = (MovieInfo) intent.getSerializableExtra(MOVIE_CONTENT_KEY);
             loadDataFromSerializable(info);
+            mMovieId = info.id;
+            mMovieLiked = false;
         }
         else if(intent.hasExtra(MOVIE_ID_KEY))
         {
-;           int movieId =  intent.getIntExtra(MOVIE_ID_KEY,0);
+            int movieId =  intent.getIntExtra(MOVIE_ID_KEY,0);
             loadDataFromViewModel(movieId);
+            mMovieId = movieId;
+            mMovieLiked = true;
         }
         else
         {
             Log.w(TAG,"Unable to load movie details. Intent doesn't seem to have the required extras");
         }
     }
-
     private void loadDataFromSerializable(MovieInfo info)
     {
         mTitleTextView.setText(info.title);
@@ -133,7 +190,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         Uri uri = mMovieApi.getMoviePoster(info.poster_path, ImageSize.IMAGE_BIG);
         Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
     }
-
     private void loadDataFromViewModel(int movieId)
     {
         DetailViewModelFactory factor = new DetailViewModelFactory(FavouritesDatabase.getInstance(this),movieId);
@@ -151,10 +207,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
             }
         });
     }
-
-    //------------
-    //  HELPERS
-    //------------
 
     private String parseMovieLengthText(int movieLength)
     {
@@ -230,9 +282,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         return 0;
     }
 
-    //---------------------
-    //  Background Loader
-    //--------------------
+    //##############
+    //##  LOADER  ##
+    //##############
 
     @NonNull
     @Override
@@ -276,9 +328,46 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
             }
 
             @Override
-            public void deliverResult(@Nullable MovieDetails data) {
+            public void deliverResult(@Nullable MovieDetails data)
+            {
                 movieDetailsCache = data;
+
+                if(args != null && args.containsKey(LOADER_PARAM_SAVE_TO_DB))
+                {
+                    if(args.getBoolean(LOADER_PARAM_SAVE_TO_DB))
+                    {
+                        saveResultToDb(data);
+                    }
+                }
                 super.deliverResult(data);
+            }
+
+            private void saveResultToDb(final MovieDetails data)
+            {
+                AppExecutors.getInstance().runOnDiskIOThread(
+                        new Runnable(){
+                            @Override
+                            public void run()
+                            {
+                                Uri uri = mMovieApi.getMoviePoster(data.movieInfo.poster_path, ImageSize.IMAGE_MEDIUM);
+                                Bitmap bitmap = null;
+                                try
+                                {
+                                    bitmap = Picasso.get().load(uri).get();
+                                }
+                                catch (IOException e)
+                                {
+                                    e.printStackTrace();
+                                }
+
+                                FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
+                                db.favouritesDao().saveMovieAsFavourite(
+                                        new MovieData(data.movieInfo)
+                                );
+                                db.favouritesDao().saveCover(new MovieCover(data.movieInfo.id,bitmap));
+                            }
+                        }
+                );
             }
         };
     }
@@ -299,34 +388,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         {
             tv.append("\n" + rev.author + " : " + rev.getContentPreview());
         }
-
-        AppExecutors.getInstance().runOnDiskIOThread(
-                new Runnable(){
-                    @Override
-                    public void run()
-                    {
-                        Uri uri = mMovieApi.getMoviePoster(data.movieInfo.poster_path, ImageSize.IMAGE_MEDIUM);
-                        Bitmap bitmap = null;
-                        try
-                        {
-                            bitmap = Picasso.get().load(uri).get();
-                        }
-                        catch (IOException e)
-                        {
-                            e.printStackTrace();
-                        }
-
-                        FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
-                        db.favouritesDao().saveMovieAsFavourite(
-                                new MovieData(data.movieInfo)
-                        );
-                        db.favouritesDao().saveCover(new MovieCover(data.movieInfo.id,bitmap));
-                    }
-                }
-        );
     }
-
-
 
     @Override
     public void onLoaderReset(@NonNull Loader<MovieDetails> loader) {}
