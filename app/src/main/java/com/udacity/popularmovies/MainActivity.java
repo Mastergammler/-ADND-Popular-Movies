@@ -227,15 +227,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void startDetailActivity(MovieInfo info)
     {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-
         intent.putExtra(DetailActivity.MOVIE_CONTENT_KEY,info);
-
-        //intent.putExtra(DetailActivity.TITLE_KEY,info.title);
-        //intent.putExtra(DetailActivity.OVERVIEW_KEY,info.overview);
-        //intent.putExtra(DetailActivity.RELEASE_KEY,info.release_date);
-        //intent.putExtra(DetailActivity.IMAGE_PATH_KEY,info.poster_path);
-        //intent.putExtra(DetailActivity.RATING_KEY,info.vote_average);
-        //intent.putExtra(DetailActivity.RUNTIME_KEY,info.runtime);
 
         startActivity(intent);
     }
@@ -325,6 +317,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mLoadingIndicator.setVisibility(View.VISIBLE);
                 mGrid.setVisibility(View.INVISIBLE);
 
+                // Will always return null for favourites
                 String discovery  = AppPreferences.getCurrentDiscoveryCache(MainActivity.this);
                 if(discovery == null)
                 {

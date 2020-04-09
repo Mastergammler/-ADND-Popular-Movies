@@ -8,7 +8,6 @@ import com.udacity.popularmovies.favouritesdb.Entitites.VideoData;
 import java.util.List;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
@@ -17,6 +16,7 @@ public interface MovieDataDao
 {
     @Query("SELECT * FROM movie_data ORDER BY user_rating")
     List<FullMovieInfo> getFavouriteMovies();
+
     @Insert
     void saveMovieAsFavourite(MovieData info);
     @Insert
@@ -26,4 +26,8 @@ public interface MovieDataDao
 
     @Query("DELETE FROM movie_data WHERE movie_id = :movieId")
     int deleteMovieFromFavourites(int movieId);
+    @Query("DELETE FROM review_data WHERE movie_id = :movieId")
+    int deleteReviews(int movieId);
+    @Query("DELETE FROM video_data WHERE movie_id = :movieId")
+    int deleteVideos(int movieId);
 }
