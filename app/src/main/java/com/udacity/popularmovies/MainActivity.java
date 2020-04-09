@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // TEST ONLY
         AppPreferences.setPreferredGrid(this, DisplayMode.GRID_3x3);
+
         mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         mFavouriteObserver = new Observer<List<FullMovieInfo>>(){
             @Override
@@ -230,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                    MovieInfo info = (MovieInfo) adapterView.getItemAtPosition(i);
+                    MovieData info = (MovieData) adapterView.getItemAtPosition(i);
                     startDetailActivity(info);
                 }
 
@@ -269,6 +270,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
         intent.putExtra(DetailActivity.MOVIE_CONTENT_KEY,info);
+
+        startActivity(intent);
+    }
+
+    private void startDetailActivity(MovieData data)
+    {
+        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+        intent.putExtra(DetailActivity.MOVIE_ID_KEY,data.getMovie_id());
 
         startActivity(intent);
     }

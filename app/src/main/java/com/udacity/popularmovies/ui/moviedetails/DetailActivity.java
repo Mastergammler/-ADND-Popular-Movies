@@ -3,6 +3,7 @@ package com.udacity.popularmovies.ui.moviedetails;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
@@ -18,8 +19,10 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.udacity.popularmovies.MainActivity;
 import com.udacity.popularmovies.R;
 import com.udacity.popularmovies.favouritesdb.AppExecutors;
+import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
 import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
@@ -27,6 +30,7 @@ import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
+import com.udacity.popularmovies.ui.MainViewModel;
 
 import java.io.IOException;
 
@@ -42,8 +46,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     private static final String SCROLL_VIEW_STATE = "scroll-view-state";
     public static final String MOVIE_CONTENT_KEY = "movie-content";
+    public static final String MOVIE_ID_KEY = "movie-id";
     protected static final String LOADER_PARAM = "loader-param-movie-id";
     private static final int MOVIE_DETAIL_LOADER_ID = 483748;
+    private static final String TAG = DetailActivity.class.getSimpleName();
 
     //---------------
     //  Members
@@ -94,20 +100,55 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     {
         Intent intent = getIntent();
 
-        MovieInfo info = (MovieInfo) intent.getSerializableExtra(MOVIE_CONTENT_KEY);
+        if(intent.hasExtra(MOVIE_CONTENT_KEY))
+        {
+            MovieInfo info = (MovieInfo) intent.getSerializableExtra(MOVIE_CONTENT_KEY);
+            loadDataFromSerializable(info);
+        }
+        else if(intent.hasExtra(MOVIE_ID_KEY))
+        {
+;           int movieId =  intent.getIntExtra(MOVIE_ID_KEY,0);
+            loadDataFromViewModel(movieId);
+        }
+        else
+        {
+            Log.w(TAG,"An error occurred while loading the data from the intent");
+        }
+    }
 
+
+    private void loadDataFromSerializable(MovieInfo info)
+    {
         mTitleTextView.setText(info.title);
         mReleaseDateTextView.setText(formatDateText(info.release_date));
         mPlotSynopsisTextView.setText(info.overview);
         mRatingTextView.setText(formatRatingText(info.vote_average));
         mRuntimeTextView.setText(parseMovieLengthText(info.runtime));
 
-
         Bundle loaderArgs = new Bundle();
         loaderArgs.putInt(LOADER_PARAM,info.id);
         LoaderManager.getInstance(this).initLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,this);
 
         Uri uri = mMovieApi.getMoviePoster(info.poster_path, ImageSize.IMAGE_BIG);
+        Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
+    }
+
+    private void loadDataFromViewModel(int movieId)
+    {
+        MainViewModel mainVM = new ViewModelProvider(this).get(MainViewModel.class);
+        FullMovieInfo movieInfo = mainVM.getInfoFor(movieId);
+
+        if(movieInfo == null)
+        {
+            Log.w(TAG,"Movie details could not be obtained from the view model");
+            return;
+        }
+
+        MovieData data = movieInfo.movieData;
+        mTitleTextView.setText(data.getTitle());
+        mReleaseDateTextView.setText(formatDateText(data.getRelease_date()));
+
+        Uri uri = mMovieApi.getMoviePoster(data.getMovie_poster_path(), ImageSize.IMAGE_BIG);
         Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
     }
 
