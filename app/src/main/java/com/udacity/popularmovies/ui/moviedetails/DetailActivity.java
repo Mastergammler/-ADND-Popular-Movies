@@ -3,6 +3,7 @@ package com.udacity.popularmovies.ui.moviedetails;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
@@ -112,7 +113,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         }
         else
         {
-            Log.w(TAG,"An error occurred while loading the data from the intent");
+            Log.w(TAG,"Unable to load movie details. Intent doesn't seem to have the required extras");
         }
     }
 
@@ -135,21 +136,20 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     private void loadDataFromViewModel(int movieId)
     {
-        MainViewModel mainVM = new ViewModelProvider(this).get(MainViewModel.class);
-        FullMovieInfo movieInfo = mainVM.getInfoFor(movieId);
+        DetailViewModelFactory factor = new DetailViewModelFactory(FavouritesDatabase.getInstance(this),movieId);
+        DetailViewModel vm = factor.create(DetailViewModel.class);
+        vm.getMovieData().observe(this, new Observer<FullMovieInfo>(){
+            @Override
+            public void onChanged(FullMovieInfo fullMovieInfo)
+            {
+                MovieData data = fullMovieInfo.movieData;
+                mTitleTextView.setText(data.getTitle());
+                mReleaseDateTextView.setText(formatDateText(data.getRelease_date()));
 
-        if(movieInfo == null)
-        {
-            Log.w(TAG,"Movie details could not be obtained from the view model");
-            return;
-        }
-
-        MovieData data = movieInfo.movieData;
-        mTitleTextView.setText(data.getTitle());
-        mReleaseDateTextView.setText(formatDateText(data.getRelease_date()));
-
-        Uri uri = mMovieApi.getMoviePoster(data.getMovie_poster_path(), ImageSize.IMAGE_BIG);
-        Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
+                Uri uri = mMovieApi.getMoviePoster(data.getMovie_poster_path(), ImageSize.IMAGE_BIG);
+                Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
+            }
+        });
     }
 
     //------------

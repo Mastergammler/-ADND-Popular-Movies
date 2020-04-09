@@ -17,6 +17,8 @@ public interface MovieDataDao
 {
     @Query("SELECT * FROM movie_data ORDER BY user_rating")
     LiveData<List<FullMovieInfo>> getFavouriteMovies();
+    @Query("SELECT * FROM movie_data WHERE movie_id = :movieId")
+    LiveData<FullMovieInfo> getMovieById(int movieId);
 
     @Insert
     void saveMovieAsFavourite(MovieData info);
@@ -31,4 +33,5 @@ public interface MovieDataDao
     int deleteReviews(int movieId);
     @Query("DELETE FROM video_data WHERE movie_id = :movieId")
     int deleteVideos(int movieId);
+
 }
