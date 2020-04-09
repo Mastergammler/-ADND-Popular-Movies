@@ -3,6 +3,7 @@ package com.udacity.popularmovies.ui.moviedetails;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
@@ -11,6 +12,7 @@ import androidx.loader.content.Loader;
 
 import android.content.ClipData;
 import android.content.Intent;
+import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -78,6 +80,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     private ScrollView mContentView;
     private ImageView mPosterView;
+    private MenuItem mLikeMenuItem;
 
     private IMovieDbApi mMovieApi;
 
@@ -98,6 +101,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         mReleaseDateTextView = findViewById(R.id.tv_release_year);
         mPosterView = findViewById(R.id.iv_movie_poster);
         mRuntimeTextView = findViewById(R.id.tv_runtime);
+        //mLikeMenuItem = findViewById(R.id.action_like);
 
         mMovieApi = new MovieApi();
 
@@ -126,7 +130,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         MenuItem item = menu.findItem(R.id.action_like);
         String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
         item.setTitle(title);
-
         return true;
     }
 
@@ -163,7 +166,6 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
             MovieInfo info = (MovieInfo) intent.getSerializableExtra(MOVIE_CONTENT_KEY);
             loadDataFromSerializable(info);
             mMovieId = info.id;
-            mMovieLiked = false;
         }
         else if(intent.hasExtra(MOVIE_ID_KEY))
         {
@@ -179,6 +181,23 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     }
     private void loadDataFromSerializable(MovieInfo info)
     {
+        DetailViewModelFactory factory = new DetailViewModelFactory(FavouritesDatabase.getInstance(this),info.id);
+        DetailViewModel vm = factory.create(DetailViewModel.class);
+        vm.getMovieData().observe(this, new Observer<FullMovieInfo>(){
+            @Override
+            public void onChanged(FullMovieInfo fullMovieInfo) {
+                if(fullMovieInfo == null)
+                {
+                    mMovieLiked = false;
+                }
+                else
+                {
+                    mMovieLiked = true;
+                }
+                invalidateOptionsMenu();
+            }
+        });
+
         mTitleTextView.setText(info.title);
         mReleaseDateTextView.setText(formatDateText(info.release_date));
         mPlotSynopsisTextView.setText(info.overview);
@@ -206,7 +225,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
                 Uri uri = mMovieApi.getMoviePoster(data.getMovie_poster_path(), ImageSize.IMAGE_BIG);
                 Drawable w185 = new BitmapDrawable(getResources(),fullMovieInfo.cover.getMoviePosterW185());
-                Picasso.get().load(uri).placeholder(R.drawable.placeholder).error(w185).into(mPosterView);
+                Picasso.get().load(uri)
+                        .placeholder(R.drawable.placeholder)
+                        .error(w185)
+                        .into(mPosterView);
             }
         });
     }
@@ -364,10 +386,19 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                                 }
 
                                 FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
-                                db.favouritesDao().saveMovieAsFavourite(
-                                        new MovieData(data.movieInfo)
-                                );
-                                db.favouritesDao().saveCover(new MovieCover(data.movieInfo.id,bitmap));
+
+                                try
+                                {
+                                    db.favouritesDao().saveMovieAsFavourite(new MovieData(data.movieInfo));
+                                    db.favouritesDao().saveCover(new MovieCover(data.movieInfo.id,bitmap));
+                                }
+                                catch (SQLiteConstraintException e)
+                                {
+                                    e.printStackTrace();
+                                    // Happens if for some reason it's tried to resave the same object
+                                    // That means that the object is already in the db, so there is nothing to do
+                                }
+
                             }
                         }
                 );
