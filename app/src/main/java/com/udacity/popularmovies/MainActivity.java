@@ -31,9 +31,7 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
-import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
-import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
-import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
+import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
 import com.udacity.popularmovies.ui.DiscoveryMode;
 import com.udacity.popularmovies.ui.DisplayMode;
 import com.udacity.popularmovies.ui.MainViewModel;
@@ -45,7 +43,6 @@ import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieInfo[]>
@@ -67,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private IMovieDbApi mMovieApi;
     private MainViewModel mViewModel;
-    private Observer<List<FullMovieInfo>> mFavouriteObserver;
+    private Observer<List<MovieCover>> mFavouriteObserver;
 
     private static Bundle mLastSavedInstanceState = new Bundle();
 
@@ -101,15 +98,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         AppPreferences.setPreferredGrid(this, DisplayMode.GRID_3x3);
 
         mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
-        mFavouriteObserver = new Observer<List<FullMovieInfo>>(){
+        mFavouriteObserver = new Observer<List<MovieCover>>(){
             @Override
-            public void onChanged(List<FullMovieInfo> fullMovieInfos) {
-                List<MovieData> movieData = new LinkedList<>();
-                for(FullMovieInfo info : fullMovieInfos)
-                {
-                    movieData.add(info.movieData);
-                }
-                loadImages(movieData.toArray(new MovieData[movieData.size()]));
+            public void onChanged(List<MovieCover> coverList)
+            {
+                loadImages(coverList.toArray(new MovieCover[coverList.size()]));
             }
         };
 
@@ -211,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         LoaderManager.getInstance(this).restartLoader(SYNC_DISCOVERY_CACHE_LOADER_ID,null,this);
     }
 
-    private void loadImages(MovieData[] data)
+    private void loadImages(MovieCover[] data)
     {
         if(data == null || data.length == 0)
         {
@@ -231,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                    MovieData info = (MovieData) adapterView.getItemAtPosition(i);
+                    MovieCover info = (MovieCover) adapterView.getItemAtPosition(i);
                     startDetailActivity(info);
                 }
 
@@ -274,10 +267,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         startActivity(intent);
     }
 
-    private void startDetailActivity(MovieData data)
+    private void startDetailActivity(MovieCover data)
     {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-        intent.putExtra(DetailActivity.MOVIE_ID_KEY,data.getMovie_id());
+        intent.putExtra(DetailActivity.MOVIE_ID_KEY,data.getMovieId());
 
         startActivity(intent);
     }
@@ -290,9 +283,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     class MovieDataAdapter extends BaseAdapter
     {
         private Context mContext;
-        private MovieData[] mMovieItems;
+        private MovieCover[] mMovieItems;
 
-        public MovieDataAdapter(Context context, MovieData[] data)
+        public MovieDataAdapter(Context context, MovieCover[] data)
         {
             mContext = context;
             mMovieItems = data;
@@ -303,12 +296,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return mMovieItems.length;
         }
         @Override
-        public MovieData getItem(int i) {
+        public MovieCover getItem(int i) {
             return mMovieItems[i];
         }
         @Override
         public long getItemId(int i) {
-            return mMovieItems[i].getMovie_id();
+            return mMovieItems[i].getMovieId();
         }
         @Override
         public View getView(int i, View view, ViewGroup viewGroup)
@@ -332,11 +325,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         private void updateImage(ImageView iv, int itemIndex)
         {
-            MovieData currentData = mMovieItems[itemIndex];
+            MovieCover currentData = mMovieItems[itemIndex];
 
-            if(currentData.getMovie_poster_w185() != null)
+            if(currentData.getMoviePosterW185() != null)
             {
-                iv.setImageBitmap(currentData.getMovie_poster_w185());
+                iv.setImageBitmap(currentData.getMoviePosterW185());
             }
             else
             {

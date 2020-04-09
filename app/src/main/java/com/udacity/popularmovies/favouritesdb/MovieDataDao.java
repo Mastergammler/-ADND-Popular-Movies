@@ -1,6 +1,7 @@
 package com.udacity.popularmovies.favouritesdb;
 
 import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
+import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
 import com.udacity.popularmovies.favouritesdb.Entitites.ReviewData;
 import com.udacity.popularmovies.favouritesdb.Entitites.VideoData;
@@ -19,6 +20,8 @@ public interface MovieDataDao
     LiveData<List<FullMovieInfo>> getFavouriteMovies();
     @Query("SELECT * FROM movie_data WHERE movie_id = :movieId")
     LiveData<FullMovieInfo> getMovieById(int movieId);
+    @Query("SELECT * FROM movie_posters")
+    LiveData<List<MovieCover>> getMovieCovers();
 
     @Insert
     void saveMovieAsFavourite(MovieData info);
@@ -26,6 +29,8 @@ public interface MovieDataDao
     void saveReviews(ReviewData data);
     @Insert
     void saveVideos(VideoData data);
+    @Insert
+    void saveCover(MovieCover cover);
 
     @Query("DELETE FROM movie_data WHERE movie_id = :movieId")
     int deleteMovieFromFavourites(int movieId);
@@ -33,5 +38,7 @@ public interface MovieDataDao
     int deleteReviews(int movieId);
     @Query("DELETE FROM video_data WHERE movie_id = :movieId")
     int deleteVideos(int movieId);
+    @Query("DELETE FROM movie_posters WHERE movie_id = :movieId")
+    int deleteCover(int movieId);
 
 }

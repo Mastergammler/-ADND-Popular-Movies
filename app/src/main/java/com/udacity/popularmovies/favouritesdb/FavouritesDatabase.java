@@ -4,23 +4,20 @@ import android.content.Context;
 import android.util.Log;
 
 import com.udacity.popularmovies.favouritesdb.Entitites.ImageConverter;
+import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
 import com.udacity.popularmovies.favouritesdb.Entitites.ReviewData;
 import com.udacity.popularmovies.favouritesdb.Entitites.UriConverter;
 import com.udacity.popularmovies.favouritesdb.Entitites.VideoData;
 import com.udacity.popularmovies.favouritesdb.Entitites.VideoTypeConverter;
 
-import androidx.annotation.NonNull;
 import androidx.room.Database;
-import androidx.room.DatabaseConfiguration;
-import androidx.room.InvalidationTracker;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
-import androidx.sqlite.db.SupportSQLiteOpenHelper;
 
 @TypeConverters({ImageConverter.class, UriConverter.class, VideoTypeConverter.class})
-@Database(entities = {MovieData.class, VideoData.class, ReviewData.class},version = 1,exportSchema = false)
+@Database(entities = {MovieData.class, VideoData.class, ReviewData.class, MovieCover.class},version = 2,exportSchema = false)
 public abstract class FavouritesDatabase extends RoomDatabase
 {
     private static final String LOG_TAG = FavouritesDatabase.class.getSimpleName();

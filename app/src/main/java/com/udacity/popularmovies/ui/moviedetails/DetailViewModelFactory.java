@@ -11,7 +11,7 @@ public class DetailViewModelFactory extends ViewModelProvider.NewInstanceFactory
     private final FavouritesDatabase mDb;
     private final int mMovieId;
 
-    public DetailViewModelFactory(FavouritesDatabase db, int movieId)
+    DetailViewModelFactory(FavouritesDatabase db, int movieId)
     {
         mDb = db;
         mMovieId = movieId;

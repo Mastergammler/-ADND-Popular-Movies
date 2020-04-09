@@ -24,6 +24,7 @@ import com.udacity.popularmovies.MainActivity;
 import com.udacity.popularmovies.R;
 import com.udacity.popularmovies.favouritesdb.AppExecutors;
 import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
+import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
 import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
@@ -318,8 +319,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
                         FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
                         db.favouritesDao().saveMovieAsFavourite(
-                                new MovieData(data.movieInfo,bitmap)
+                                new MovieData(data.movieInfo)
                         );
+                        db.favouritesDao().saveCover(new MovieCover(data.movieInfo.id,bitmap));
                     }
                 }
         );
