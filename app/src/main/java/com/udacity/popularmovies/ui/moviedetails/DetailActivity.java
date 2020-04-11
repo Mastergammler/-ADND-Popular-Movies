@@ -449,19 +449,35 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoadFinished(@NonNull Loader<MovieDetails> loader, final MovieDetails data)
     {
-        TextView tv = findViewById(R.id.debug_view);
-        tv.setText(data.movieInfo.tagline != null ? data.movieInfo.tagline : "");
-        tv.append("\n" + data.movieInfo.status);
-        tv.append("\n" + data.movieInfo.runtime);
-        tv.append("\n" + data.movieInfo.revenue + "$$$$$");
-        for(VideoInfo uri : data.movieTrailers)
+        if(data != null)
         {
-            tv.append("\n" + uri.buildVideoUrl().toString());
+            TextView tv = findViewById(R.id.debug_view);
+            if(data.movieInfo != null)
+            {
+
+                tv.setText(data.movieInfo.tagline != null ? data.movieInfo.tagline : "");
+                tv.append("\n" + data.movieInfo.status);
+                tv.append("\n" + data.movieInfo.runtime);
+                tv.append("\n" + data.movieInfo.revenue + "$$$$$");
+            }
+
+            if(data.movieReviews != null)
+            {
+                for(VideoInfo uri : data.movieTrailers)
+                {
+                    tv.append("\n" + uri.buildVideoUrl().toString());
+                }
+            }
+            if(data.movieTrailers != null)
+            {
+                for(MovieReview rev : data.movieReviews)
+                {
+                    tv.append("\n" + rev.author + " : " + rev.getContentPreview());
+                }
+            }
+
         }
-        for(MovieReview rev : data.movieReviews)
-        {
-            tv.append("\n" + rev.author + " : " + rev.getContentPreview());
-        }
+
     }
 
     @Override

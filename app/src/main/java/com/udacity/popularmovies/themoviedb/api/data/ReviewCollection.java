@@ -15,6 +15,8 @@ public class ReviewCollection
 
     public static MovieReview[] reviewsFromJson(String collectionJson)
     {
-        return new Gson().fromJson(collectionJson,ReviewCollection.class).results;
+        ReviewCollection collection = new Gson().fromJson(collectionJson,ReviewCollection.class);
+        if(collection != null) return collection.results;
+        return null;
     }
 }

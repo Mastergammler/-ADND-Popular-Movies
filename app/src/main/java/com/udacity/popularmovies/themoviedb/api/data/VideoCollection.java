@@ -12,6 +12,9 @@ public class VideoCollection
 
     public static VideoInfo[] videosFromJson(String collectionString)
     {
-        return new Gson().fromJson(collectionString,VideoCollection.class).results;
+        VideoCollection collection = new Gson().fromJson(collectionString,VideoCollection.class);
+        if(collection != null)
+            return collection.results;
+        return null;
     }
 }
