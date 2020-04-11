@@ -1,4 +1,4 @@
-package com.udacity.popularmovies.ui;
+package com.udacity.popularmovies.ui.main;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +9,6 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.udacity.popularmovies.MainActivity;
 import com.udacity.popularmovies.R;
 import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.sync.SyncDiscoveryTask;

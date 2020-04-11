@@ -4,12 +4,10 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.util.Log;
 
-import com.google.gson.Gson;
-import com.udacity.popularmovies.ui.DiscoveryMode;
+import com.udacity.popularmovies.ui.main.DiscoveryMode;
 import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.settings.DiscoveryCache;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
-import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
 import java.util.concurrent.TimeUnit;
 

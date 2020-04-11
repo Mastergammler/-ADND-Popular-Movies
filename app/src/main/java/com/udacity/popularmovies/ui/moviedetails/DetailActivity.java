@@ -46,15 +46,13 @@ import java.io.IOException;
  * Activity for the detail view of a specific movies
  * Shows the picture as well as additional information
  */
-public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieDetails>
+public class DetailActivity extends AppCompatActivity
 {
-    //---------------
-    //   Constants
-    //---------------
+    //*****************
+    //**  CONSTANTS  **
+    //*****************
 
     private static final int MOVIE_DETAIL_LOADER_ID = 483748;
-    protected static final String LOADER_PARAM = "loader-param-movie-id";
-    protected static final String LOADER_PARAM_SAVE_OR_DELETE = "loader-save-to-db";
 
     private static final String TAG = DetailActivity.class.getSimpleName();
     private static final String SCROLL_VIEW_STATE = "scroll-view-state";
@@ -62,12 +60,11 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     public static final String MOVIE_CONTENT_KEY = "movie-content";
     public static final String MOVIE_ID_KEY = "movie-id";
 
-    //---------------
-    //    Members
-    //---------------
+    //***************
+    //**  MEMBERS  **
+    //***************
 
     private boolean mMovieLiked = false;
-
     private int mMovieId;
 
     private TextView mTitleTextView;
@@ -78,13 +75,13 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     private ScrollView mContentView;
     private ImageView mPosterView;
-    private MenuItem mLikeMenuItem;
 
     private IMovieDbApi mMovieApi;
+    private MovieDetailLoaderCallback mLoaderCallback;
 
-    //#################
-    //##  LIFECYCLE  ##
-    //#################
+    //*****************
+    //**  LIFECYCLE  **
+    //*****************
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -99,8 +96,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         mReleaseDateTextView = findViewById(R.id.tv_release_year);
         mPosterView = findViewById(R.id.iv_movie_poster);
         mRuntimeTextView = findViewById(R.id.tv_runtime);
+        TextView debugView = findViewById(R.id.debug_view);
 
         mMovieApi = new MovieApi();
+        mLoaderCallback = new MovieDetailLoaderCallback(this,debugView);
 
         initViewValues();
     }
@@ -115,9 +114,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         mContentView.setTop(savedInstanceState.getInt(SCROLL_VIEW_STATE));
     }
 
-    //############
-    //##  MENU  ##
-    //############
+    //************
+    //**  MENU  **
+    //************
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -138,12 +137,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
             case R.id.action_like:
                 Bundle loaderArgs = new Bundle();
                 mMovieLiked = !mMovieLiked;
-                loaderArgs.putInt(LOADER_PARAM,mMovieId);
+                loaderArgs.putInt(MovieDetailLoaderCallback.LOADER_PARAM,mMovieId);
                 // TODO: 09.04.2020 case for delete
-                loaderArgs.putBoolean(LOADER_PARAM_SAVE_OR_DELETE,mMovieLiked);
-                LoaderManager.getInstance(this).restartLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,this);
-
-
+                loaderArgs.putBoolean(MovieDetailLoaderCallback.LOADER_PARAM_SAVE_OR_DELETE,mMovieLiked);
+                LoaderManager.getInstance(this).restartLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,mLoaderCallback);
                 String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
                 item.setTitle(title);
                 return true;
@@ -151,9 +148,9 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         }
     }
 
-    //------------
-    //  HELPERS
-    //------------
+    //***************
+    //**  HELPERS  **
+    //***************
 
     private void initViewValues()
     {
@@ -207,8 +204,8 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         mRuntimeTextView.setText(parseMovieLengthText(info.runtime));
 
         Bundle loaderArgs = new Bundle();
-        loaderArgs.putInt(LOADER_PARAM,info.id);
-        LoaderManager.getInstance(this).initLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,this);
+        loaderArgs.putInt(MovieDetailLoaderCallback.LOADER_PARAM,info.id);
+        LoaderManager.getInstance(this).initLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,mLoaderCallback);
 
         Uri uri = mMovieApi.getMoviePoster(info.poster_path, ImageSize.IMAGE_BIG);
         Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
@@ -285,201 +282,4 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         else
             return String.valueOf(rating);
     }
-
-    private String getStringExtra(Intent intent, String key)
-    {
-        if(intent.hasExtra(key))
-        {
-            return intent.getStringExtra(key);
-        }
-        return "";
-    }
-    private int getIntExtra(Intent intent, String key)
-    {
-        if(intent.hasExtra(key))
-        {
-            return intent.getIntExtra(key,0);
-        }
-        return 0;
-    }
-    private float getFloatExtra(Intent intent, String key)
-    {
-        if(intent.hasExtra(key))
-        {
-            return intent.getFloatExtra(key,0);
-        }
-        return 0;
-    }
-
-    //##############
-    //##  LOADER  ##
-    //##############
-
-    @NonNull
-    @Override
-    public Loader<MovieDetails> onCreateLoader(int id, final @Nullable Bundle args) {
-        return new AsyncTaskLoader<MovieDetails>(this){
-
-            private MovieDetails movieDetailsCache;
-
-            @Override
-            protected void onStartLoading() {
-                super.onStartLoading();
-                if(movieDetailsCache != null) deliverResult(movieDetailsCache);
-                else
-                {
-                    forceLoad();
-                    // TODO: 07.04.2020 show loading indicator
-                }
-            }
-
-            @Nullable
-            @Override
-            public MovieDetails loadInBackground()
-            {
-                if(args == null)
-                {
-                    Log.w(this.getClass().getSimpleName(),"No parameter specified for the loader!");
-                    return null;
-                }
-                int id = args.getInt(LOADER_PARAM);
-                if(id == 0)
-                {
-                    Log.w(this.getClass().getSimpleName(),"Invalid id specified! Unable to load movie details!");
-                    return null;
-                }
-
-                MovieInfo info = mMovieApi.getMovieDetails(id);
-                VideoInfo[] trailerUrls = mMovieApi.getVideoLinks(id,true);
-                MovieReview[] reviews = mMovieApi.getMovieReviews(id);
-
-                return new MovieDetails(info,reviews,trailerUrls);
-            }
-
-            @Override
-            public void deliverResult(@Nullable MovieDetails data)
-            {
-                movieDetailsCache = data;
-
-                if(args != null && args.containsKey(LOADER_PARAM_SAVE_OR_DELETE))
-                {
-                    if(args.getBoolean(LOADER_PARAM_SAVE_OR_DELETE))
-                    {
-                        saveResultToDb(data);
-                    }
-                    else
-                    {
-                        deleteResult(data);
-                    }
-                }
-                super.deliverResult(data);
-            }
-
-            private void deleteResult(final MovieDetails data)
-            {
-                AppExecutors.getInstance().runOnDiskIOThread(
-                        new Runnable(){
-                            @Override
-                            public void run() {
-                                int movieId = data.movieInfo.id;
-                                FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
-                                int amount = db.favouritesDao().deleteCover(movieId);
-                                int amount2 = db.favouritesDao().deleteVideos(movieId);
-                                int amount3 = db.favouritesDao().deleteMovieFromFavourites(movieId);
-                                int amount4 = db.favouritesDao().deleteReviews(movieId);
-                            }
-                        }
-                );
-            }
-
-            private void saveResultToDb(final MovieDetails data)
-            {
-                AppExecutors.getInstance().runOnDiskIOThread(
-                        new Runnable(){
-                            @Override
-                            public void run()
-                            {
-                                Uri uri = mMovieApi.getMoviePoster(data.movieInfo.poster_path, ImageSize.IMAGE_MEDIUM);
-                                Bitmap bitmap = null;
-                                try
-                                {
-                                    bitmap = Picasso.get().load(uri).get();
-                                }
-                                catch (IOException e)
-                                {
-                                    e.printStackTrace();
-                                }
-
-                                int movieId = data.movieInfo.id;
-                                ReviewData[] reviews = new ReviewData[data.movieReviews.length];
-                                VideoData[] videos = new VideoData[data.movieTrailers.length];
-
-                                for(int i = 0; i < data.movieReviews.length; i++)
-                                {
-                                    reviews[i] = new ReviewData(movieId,data.movieReviews[i]);
-                                }
-                                for(int i = 0; i < data.movieTrailers.length; i++)
-                                {
-                                    videos[i] = new VideoData(movieId,data.movieTrailers[i]);
-                                }
-
-
-                                FavouritesDatabase db = FavouritesDatabase.getInstance(DetailActivity.this);
-                                try
-                                {
-                                    db.favouritesDao().saveReviews(reviews);
-                                    db.favouritesDao().saveVideos(videos);
-                                    db.favouritesDao().saveMovieAsFavourite(new MovieData(data.movieInfo));
-                                    db.favouritesDao().saveCover(new MovieCover(movieId,bitmap));
-                                }
-                                catch (SQLiteConstraintException e)
-                                {
-                                    // Happens if for some reason it's tried to resave the same object
-                                    // That means that the object is already in the db, so there is nothing to do
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        }
-                );
-            }
-        };
-    }
-
-    @Override
-    public void onLoadFinished(@NonNull Loader<MovieDetails> loader, final MovieDetails data)
-    {
-        if(data != null)
-        {
-            TextView tv = findViewById(R.id.debug_view);
-            if(data.movieInfo != null)
-            {
-
-                tv.setText(data.movieInfo.tagline != null ? data.movieInfo.tagline : "");
-                tv.append("\n" + data.movieInfo.status);
-                tv.append("\n" + data.movieInfo.runtime);
-                tv.append("\n" + data.movieInfo.revenue + "$$$$$");
-            }
-
-            if(data.movieReviews != null)
-            {
-                for(VideoInfo uri : data.movieTrailers)
-                {
-                    tv.append("\n" + uri.buildVideoUrl().toString());
-                }
-            }
-            if(data.movieTrailers != null)
-            {
-                for(MovieReview rev : data.movieReviews)
-                {
-                    tv.append("\n" + rev.author + " : " + rev.getContentPreview());
-                }
-            }
-
-        }
-
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<MovieDetails> loader) {}
 }

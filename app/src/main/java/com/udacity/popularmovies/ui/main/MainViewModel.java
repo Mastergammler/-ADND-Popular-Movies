@@ -1,9 +1,8 @@
-package com.udacity.popularmovies.ui;
+package com.udacity.popularmovies.ui.main;
 
 import android.app.Application;
 import android.util.Log;
 
-import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
 import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
 

@@ -1,13 +1,10 @@
 package com.udacity.popularmovies;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
-import androidx.loader.content.AsyncTaskLoader;
-import androidx.loader.content.Loader;
 
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -22,105 +19,104 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
-import com.udacity.popularmovies.ui.DiscoveryMode;
-import com.udacity.popularmovies.ui.DisplayMode;
-import com.udacity.popularmovies.ui.MainViewModel;
-import com.udacity.popularmovies.ui.MovieCacheLoaderCallback;
-import com.udacity.popularmovies.ui.MovieCoverAdapter;
-import com.udacity.popularmovies.ui.MovieInfoAdapter;
+import com.udacity.popularmovies.ui.main.DiscoveryMode;
+import com.udacity.popularmovies.ui.main.DisplayMode;
+import com.udacity.popularmovies.ui.main.MainViewModel;
+import com.udacity.popularmovies.ui.main.MovieCacheLoaderCallback;
+import com.udacity.popularmovies.ui.main.MovieCoverAdapter;
 import com.udacity.popularmovies.ui.moviedetails.DetailActivity;
 import com.udacity.popularmovies.settings.AppPreferences;
 import com.udacity.popularmovies.sync.SyncDiscoveryTask;
-import com.udacity.popularmovies.themoviedb.IMovieDbApi;
-import com.udacity.popularmovies.themoviedb.api.MovieApi;
-import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
 {
-    //#################
-    //##  CONSTANTS  ##
-    //#################
+    //*****************
+    //**  CONSTANTS  **
+    //*****************
 
     private static final int SYNC_DISCOVERY_CACHE_LOADER_ID = 344382;
     private static final String GRID_VIEW_SCROLL_POSITION_KEY = "grid-view-scroll-state";
 
-    //------------
-    //  Members
-    //------------
+    //***************
+    //**  MEMBERS  **
+    //***************
 
     private GridView mGrid;
     private TextView mErrorMessageText;
     private ProgressBar mLoadingIndicator;
-    private MovieCacheLoaderCallback mLoaderCallbback;
-
-    private IMovieDbApi mMovieApi;
-    //private Observer<List<MovieCover>> mFavouriteObserver;
+    private MovieCacheLoaderCallback mLoaderCallback;
 
     private static Bundle mLastSavedInstanceState = new Bundle();
 
-    //----------------
-    //  Android Init
-    //----------------
+    //*****************
+    //**  LIFECYCLE  **
+    //*****************
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
         mGrid = findViewById(R.id.gv_main_view);
-        if(savedInstanceState != null && savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY) != null)
-        {
-            mGrid.onRestoreInstanceState(savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
-        }
-        else if(mLastSavedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY) != null)
-        {
-            mGrid.onRestoreInstanceState(mLastSavedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
-        }
-
         mErrorMessageText = findViewById(R.id.tv_error_message);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
-        mLoaderCallbback = new MovieCacheLoaderCallback(this,mGrid,mLoadingIndicator,mErrorMessageText);
-        mMovieApi = new MovieApi();
+        mLoaderCallback = new MovieCacheLoaderCallback(this,mGrid,mLoadingIndicator,mErrorMessageText);
 
-        MainViewModel vm = new ViewModelProvider(this).get(MainViewModel.class);
-
-        // TEST ONLY
-        AppPreferences.setPreferredGrid(this, DisplayMode.GRID_3x3);
-
-
-
+        restoreInstanceState(savedInstanceState);
         setPreferredGridView();
         loadMoviesFor(AppPreferences.getLatestDiscoveryMode(this));
         SyncDiscoveryTask.initialize(this);
+        MainViewModel vm = new ViewModelProvider(this).get(MainViewModel.class);
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
+    protected void onResume()
+    {
+        onRestoreInstanceState(mLastSavedInstanceState);
+        super.onResume();
+    }
+
+    //------------------------
+    //  Saved Instance State
+    //------------------------
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState)
+    {
         outState.putParcelable(GRID_VIEW_SCROLL_POSITION_KEY,mGrid.onSaveInstanceState());
         mLastSavedInstanceState.putParcelable(GRID_VIEW_SCROLL_POSITION_KEY,mGrid.onSaveInstanceState());
         super.onSaveInstanceState(outState);
     }
-
     @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState)
+    {
         if(savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY)!=null)
         {
             mGrid.onRestoreInstanceState(savedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
         }
     }
-
-    @Override
-    protected void onResume() {
-        onRestoreInstanceState(mLastSavedInstanceState);
-        super.onResume();
+    private void restoreInstanceState(Bundle state)
+    {
+        if(state != null && state.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY) != null)
+        {
+            mGrid.onRestoreInstanceState(state.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
+        }
+        else if(mLastSavedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY) != null)
+        {
+            mGrid.onRestoreInstanceState(mLastSavedInstanceState.getParcelable(GRID_VIEW_SCROLL_POSITION_KEY));
+        }
     }
 
+    //************
+    //**  MENU  **
+    //************
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         MenuInflater inflater = new MenuInflater(this);
         inflater.inflate(R.menu.main,menu);
         return true;
@@ -149,9 +145,9 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    //------------
-    //  Methods
-    //------------
+    //***************
+    //**  METHODS  **
+    //***************
 
     private void setPreferredGridView()
     {
@@ -167,7 +163,6 @@ public class MainActivity extends AppCompatActivity
             mGrid.setNumColumns((mode.ordinal()+1));
         }
     }
-
     private void loadMoviesFor(DiscoveryMode mode)
     {
         MainViewModel vm = new ViewModelProvider(MainActivity.this).get(MainViewModel.class);
@@ -193,12 +188,8 @@ public class MainActivity extends AppCompatActivity
                 vm.getFavourites().observe(this,obs);
                 return;
         }
-        /**
-         * Needs to be on restart loader, else it will not call 'onStartLoading()' when the options items are pressed
-         */
-        LoaderManager.getInstance(this).restartLoader(SYNC_DISCOVERY_CACHE_LOADER_ID,null,mLoaderCallbback);
+        LoaderManager.getInstance(this).restartLoader(SYNC_DISCOVERY_CACHE_LOADER_ID,null, mLoaderCallback);
     }
-
     private void loadImages(MovieCover[] data)
     {
         if(data == null || data.length == 0)
@@ -227,7 +218,6 @@ public class MainActivity extends AppCompatActivity
             adapter.notifyDataSetChanged();
         }
     }
-
     private void startDetailActivity(MovieCover data)
     {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
