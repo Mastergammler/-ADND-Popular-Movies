@@ -1,17 +1,12 @@
 package com.udacity.popularmovies.ui.moviedetails;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
-import androidx.loader.content.AsyncTaskLoader;
-import androidx.loader.content.Loader;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteConstraintException;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -26,21 +21,12 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.udacity.popularmovies.R;
-import com.udacity.popularmovies.favouritesdb.AppExecutors;
 import com.udacity.popularmovies.favouritesdb.Entitites.FullMovieInfo;
-import com.udacity.popularmovies.favouritesdb.Entitites.MovieCover;
-import com.udacity.popularmovies.favouritesdb.Entitites.MovieData;
-import com.udacity.popularmovies.favouritesdb.Entitites.ReviewData;
-import com.udacity.popularmovies.favouritesdb.Entitites.VideoData;
 import com.udacity.popularmovies.favouritesdb.FavouritesDatabase;
 import com.udacity.popularmovies.themoviedb.IMovieDbApi;
 import com.udacity.popularmovies.themoviedb.api.MovieApi;
 import com.udacity.popularmovies.themoviedb.api.data.ImageSize;
 import com.udacity.popularmovies.themoviedb.api.data.MovieInfo;
-import com.udacity.popularmovies.themoviedb.api.data.MovieReview;
-import com.udacity.popularmovies.themoviedb.api.data.VideoInfo;
-
-import java.io.IOException;
 
 /**
  * Activity for the detail view of a specific movies
@@ -101,17 +87,17 @@ public class DetailActivity extends AppCompatActivity
         mMovieApi = new MovieApi();
         mLoaderCallback = new MovieDetailLoaderCallback(this,debugView);
 
-        initViewValues();
+        loadAvailableMovieDetails();
     }
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(SCROLL_VIEW_STATE,mContentView.getTop());
+        outState.putInt(SCROLL_VIEW_STATE,mContentView.getScrollY());
     }
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        mContentView.setTop(savedInstanceState.getInt(SCROLL_VIEW_STATE));
+        mContentView.setScrollY(savedInstanceState.getInt(SCROLL_VIEW_STATE));
     }
 
     //************
@@ -123,26 +109,21 @@ public class DetailActivity extends AppCompatActivity
     {
         MenuInflater inflater = new MenuInflater(this);
         inflater.inflate(R.menu.detail_activity,menu);
+
         MenuItem item = menu.findItem(R.id.action_like);
-        String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
-        item.setTitle(title);
+        updateMenuText(item);
+
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item)
     {
         switch(item.getItemId())
         {
             case R.id.action_like:
-                Bundle loaderArgs = new Bundle();
                 mMovieLiked = !mMovieLiked;
-                loaderArgs.putInt(MovieDetailLoaderCallback.LOADER_PARAM,mMovieId);
-                // TODO: 09.04.2020 case for delete
-                loaderArgs.putBoolean(MovieDetailLoaderCallback.LOADER_PARAM_SAVE_OR_DELETE,mMovieLiked);
-                LoaderManager.getInstance(this).restartLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,mLoaderCallback);
-                String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
-                item.setTitle(title);
+                updateMenuText(item);
+                restartLoader();
                 return true;
             default: return super.onOptionsItemSelected(item);
         }
@@ -152,23 +133,24 @@ public class DetailActivity extends AppCompatActivity
     //**  HELPERS  **
     //***************
 
-    private void initViewValues()
+    private void loadAvailableMovieDetails()
     {
         Intent intent = getIntent();
 
-        // TODO: 09.04.2020 this is not how liked is determined, this just represents the context we come from
         if(intent.hasExtra(MOVIE_CONTENT_KEY))
         {
             MovieInfo info = (MovieInfo) intent.getSerializableExtra(MOVIE_CONTENT_KEY);
-            loadDataFromSerializable(info);
             mMovieId = info.id;
+
+            loadDataFromSerializable(info);
         }
         else if(intent.hasExtra(MOVIE_ID_KEY))
         {
             int movieId =  intent.getIntExtra(MOVIE_ID_KEY,0);
-            loadDataFromViewModel(movieId);
             mMovieId = movieId;
             mMovieLiked = true;
+
+            loadDataFromViewModel(movieId);
         }
         else
         {
@@ -177,8 +159,21 @@ public class DetailActivity extends AppCompatActivity
     }
     private void loadDataFromSerializable(MovieInfo info)
     {
+        updateMovieLikedState(info.id);
+
+        mTitleTextView.setText(info.title);
+        mReleaseDateTextView.setText(DisplayUtils.formatDateText(info.release_date));
+        mPlotSynopsisTextView.setText(info.overview);
+        mRatingTextView.setText(DisplayUtils.formatRatingText(info.vote_average));
+        mRuntimeTextView.setText(DisplayUtils.parseMovieLengthText(info.runtime));
+
+        initLoader(info.id);
+        loadMovieCover(info.poster_path);
+    }
+    private void updateMovieLikedState(int movieId)
+    {
         FavouritesDatabase db = FavouritesDatabase.getInstance(getApplicationContext());
-        DetailViewModelFactory factory = new DetailViewModelFactory(db,info.id);
+        DetailViewModelFactory factory = new DetailViewModelFactory(db,movieId);
         final DetailViewModel vm = new ViewModelProvider(DetailActivity.this,factory).get(DetailViewModel.class);
         vm.getMovieData().observe(this, new Observer<FullMovieInfo>(){
             @Override
@@ -196,20 +191,21 @@ public class DetailActivity extends AppCompatActivity
                 invalidateOptionsMenu();
             }
         });
-
-        mTitleTextView.setText(info.title);
-        mReleaseDateTextView.setText(formatDateText(info.release_date));
-        mPlotSynopsisTextView.setText(info.overview);
-        mRatingTextView.setText(formatRatingText(info.vote_average));
-        mRuntimeTextView.setText(parseMovieLengthText(info.runtime));
-
-        Bundle loaderArgs = new Bundle();
-        loaderArgs.putInt(MovieDetailLoaderCallback.LOADER_PARAM,info.id);
-        LoaderManager.getInstance(this).initLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,mLoaderCallback);
-
-        Uri uri = mMovieApi.getMoviePoster(info.poster_path, ImageSize.IMAGE_BIG);
-        Picasso.get().load(uri).placeholder(R.drawable.placeholder).into(mPosterView);
     }
+    private void initLoader(int movieId)
+    {
+        Bundle loaderArgs = new Bundle();
+        loaderArgs.putInt(MovieDetailLoaderCallback.LOADER_PARAM,movieId);
+        LoaderManager.getInstance(this).initLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,mLoaderCallback);
+    }
+    private void loadMovieCover(String posterPath)
+    {
+        Uri uri = mMovieApi.getMoviePoster(posterPath, ImageSize.IMAGE_BIG);
+        Picasso.get().load(uri)
+                .placeholder(R.drawable.placeholder)
+                .into(mPosterView);
+    }
+
     private void loadDataFromViewModel(int movieId)
     {
         FavouritesDatabase db = FavouritesDatabase.getInstance(getApplicationContext());
@@ -220,66 +216,32 @@ public class DetailActivity extends AppCompatActivity
             public void onChanged(FullMovieInfo fullMovieInfo)
             {
                 vm.getMovieData().removeObserver(this);
-                MovieData data = fullMovieInfo.movieData;
-                mTitleTextView.setText(data.getTitle());
-                mReleaseDateTextView.setText(formatDateText(data.getRelease_date()));
-
-                Uri uri = mMovieApi.getMoviePoster(data.getMovie_poster_path(), ImageSize.IMAGE_BIG);
-                Drawable w185 = new BitmapDrawable(getResources(),fullMovieInfo.cover.getMoviePosterW185());
-                Picasso.get().load(uri)
-                        .placeholder(R.drawable.placeholder)
-                        .error(w185)
-                        .into(mPosterView);
+                mTitleTextView.setText(fullMovieInfo.movieData.getTitle());
+                mReleaseDateTextView.setText(DisplayUtils.formatDateText(fullMovieInfo.movieData.getRelease_date()));
+                loadMovieCoverWithFallback(fullMovieInfo);
             }
         });
     }
-
-    private String parseMovieLengthText(int movieLength)
+    private void loadMovieCoverWithFallback(FullMovieInfo fullInfo)
     {
-        if(movieLength == 0) return "";
-        return movieLength + " min";
+        Uri uri = mMovieApi.getMoviePoster(fullInfo.movieData.getMovie_poster_path(), ImageSize.IMAGE_BIG);
+        Drawable w185 = new BitmapDrawable(getResources(),fullInfo.cover.getMoviePosterW185());
+        Picasso.get().load(uri)
+                .placeholder(R.drawable.placeholder)
+                .error(w185)
+                .into(mPosterView);
     }
-    private String formatDateText(String dateString)
+
+    private void restartLoader()
     {
-        if(dateString == null) return "";
-        String parsed = "";
-
-        String[] date = dateString.split("-");
-        if(date.length>1)
-        {
-            int monthNumber = Integer.parseInt(date[1]);
-            parsed += parseMonth(monthNumber);
-        }
-        parsed += " ";
-        parsed += date[0];
-
-        return parsed;
+        Bundle loaderArgs = new Bundle();
+        loaderArgs.putInt(MovieDetailLoaderCallback.LOADER_PARAM,mMovieId);
+        loaderArgs.putBoolean(MovieDetailLoaderCallback.LOADER_PARAM_SAVE_OR_DELETE,mMovieLiked);
+        LoaderManager.getInstance(this).restartLoader(MOVIE_DETAIL_LOADER_ID,loaderArgs,mLoaderCallback);
     }
-    private String parseMonth(int monthNumber)
+    private void updateMenuText(MenuItem item)
     {
-        switch(monthNumber)
-        {
-            default:return "Jan";
-            case 2: return "Feb";
-            case 3: return "Mar";
-            case 4: return "Apr";
-            case 5: return "May";
-            case 6: return "Jun";
-            case 7: return "Jul";
-            case 8: return "Aug";
-            case 9: return "Sep";
-            case 10: return "Oct";
-            case 11: return "Nov";
-            case 12: return "Dec";
-        }
-    }
-    private String formatRatingText(float rating)
-    {
-        if(rating == 0) return "?";
-
-        if(rating >= 10)
-            return String.valueOf((int)rating);
-        else
-            return String.valueOf(rating);
+        String title = mMovieLiked ? getString(R.string.action_unlike) : getString(R.string.action_like);
+        item.setTitle(title);
     }
 }
