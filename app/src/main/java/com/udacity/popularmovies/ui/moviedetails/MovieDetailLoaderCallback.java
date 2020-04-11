@@ -50,18 +50,23 @@ public class MovieDetailLoaderCallback implements LoaderManager.LoaderCallbacks<
     @Override
     public Loader<MovieDetails> onCreateLoader(int id, @Nullable final Bundle args)
     {
-        return new AsyncTaskLoader<MovieDetails>(mContext){
-
+        return new AsyncTaskLoader<MovieDetails>(mContext)
+        {
             private MovieDetails movieDetailsCache;
 
             @Override
-            protected void onStartLoading() {
+            protected void onStartLoading()
+            {
                 super.onStartLoading();
-                if(movieDetailsCache != null) deliverResult(movieDetailsCache);
+
+                if(movieDetailsCache != null)
+                {
+                    deliverResult(movieDetailsCache);
+                }
                 else
                 {
-                    forceLoad();
                     // TODO: 07.04.2020 show loading indicator
+                    forceLoad();
                 }
             }
 
@@ -69,21 +74,31 @@ public class MovieDetailLoaderCallback implements LoaderManager.LoaderCallbacks<
             @Override
             public MovieDetails loadInBackground()
             {
+                if(argumentsAreInvalid()) return null;
+
+                int id = args.getInt(LOADER_PARAM);
+
+                return loadMovieDetails(id);
+            }
+            private boolean argumentsAreInvalid()
+            {
                 if(args == null)
                 {
                     Log.w(this.getClass().getSimpleName(),"No parameter specified for the loader!");
-                    return null;
+                    return true;
                 }
-                int id = args.getInt(LOADER_PARAM);
-                if(id == 0)
+                if(args.getInt(LOADER_PARAM) == 0)
                 {
-                    Log.w(this.getClass().getSimpleName(),"Invalid id specified! Unable to load movie details!");
-                    return null;
+                    Log.w(this.getClass().getSimpleName(),"Invalid movie id specified! Unable to load movie details!");
+                    return true;
                 }
-
-                MovieInfo info = mMovieApi.getMovieDetails(id);
-                VideoInfo[] trailerUrls = mMovieApi.getVideoLinks(id,true);
-                MovieReview[] reviews = mMovieApi.getMovieReviews(id);
+                return false;
+            }
+            private MovieDetails loadMovieDetails(int movieId)
+            {
+                MovieInfo info = mMovieApi.getMovieDetails(movieId);
+                VideoInfo[] trailerUrls = mMovieApi.getVideoLinks(movieId,true);
+                MovieReview[] reviews = mMovieApi.getMovieReviews(movieId);
 
                 return new MovieDetails(info,reviews,trailerUrls);
             }
@@ -91,23 +106,23 @@ public class MovieDetailLoaderCallback implements LoaderManager.LoaderCallbacks<
             @Override
             public void deliverResult(@Nullable MovieDetails data)
             {
+                if(data == null)
+                {
+                    Log.w("Loader callback","Movie data is null, data not loaded");
+                    return;
+                }
                 movieDetailsCache = data;
 
                 if(args != null && args.containsKey(LOADER_PARAM_SAVE_OR_DELETE))
                 {
-                    if(args.getBoolean(LOADER_PARAM_SAVE_OR_DELETE))
-                    {
-                        saveResultToDb(data);
-                    }
-                    else
-                    {
-                        deleteResult(data);
-                    }
+                    boolean save = args.getBoolean(LOADER_PARAM_SAVE_OR_DELETE);
+
+                    if(save) saveResultToDb(data);
+                    else deleteResultFromDb(data);
                 }
                 super.deliverResult(data);
             }
-
-            private void deleteResult(final MovieDetails data)
+            private void deleteResultFromDb(final MovieDetails data)
             {
                 AppExecutors.getInstance().runOnDiskIOThread(
                         new Runnable(){
@@ -123,7 +138,6 @@ public class MovieDetailLoaderCallback implements LoaderManager.LoaderCallbacks<
                         }
                 );
             }
-
             private void saveResultToDb(final MovieDetails data)
             {
                 AppExecutors.getInstance().runOnDiskIOThread(
@@ -131,20 +145,13 @@ public class MovieDetailLoaderCallback implements LoaderManager.LoaderCallbacks<
                             @Override
                             public void run()
                             {
-                                Uri uri = mMovieApi.getMoviePoster(data.movieInfo.poster_path, ImageSize.IMAGE_MEDIUM);
-                                Bitmap bitmap = null;
-                                try
-                                {
-                                    bitmap = Picasso.get().load(uri).get();
-                                }
-                                catch (IOException e)
-                                {
-                                    e.printStackTrace();
-                                }
-
+                                Bitmap bitmap = loadCoverBitmap(data.movieInfo.poster_path);
                                 int movieId = data.movieInfo.id;
+
                                 ReviewData[] reviews = new ReviewData[data.movieReviews.length];
                                 VideoData[] videos = new VideoData[data.movieTrailers.length];
+                                MovieData movieData = new MovieData(data.movieInfo);
+                                MovieCover cover = new MovieCover(movieId,bitmap);
 
                                 for(int i = 0; i < data.movieReviews.length; i++)
                                 {
@@ -155,23 +162,43 @@ public class MovieDetailLoaderCallback implements LoaderManager.LoaderCallbacks<
                                     videos[i] = new VideoData(movieId,data.movieTrailers[i]);
                                 }
 
-                                FavouritesDatabase db = FavouritesDatabase.getInstance(mContext);
-                                try
-                                {
-                                    db.favouritesDao().saveReviews(reviews);
-                                    db.favouritesDao().saveVideos(videos);
-                                    db.favouritesDao().saveMovieAsFavourite(new MovieData(data.movieInfo));
-                                    db.favouritesDao().saveCover(new MovieCover(movieId,bitmap));
-                                }
-                                catch (SQLiteConstraintException e)
-                                {
-                                    // Happens if for some reason it's tried to resave the same object
-                                    // That means that the object is already in the db, so there is nothing to do
-                                    e.printStackTrace();
-                                }
+                                saveToDb(reviews,videos,movieData,cover);
                             }
                         }
                 );
+            }
+            private Bitmap loadCoverBitmap(String posterPath)
+            {
+                Uri uri = mMovieApi.getMoviePoster(posterPath, ImageSize.IMAGE_MEDIUM);
+                Bitmap bitmap = null;
+
+                try
+                {
+                    bitmap = Picasso.get().load(uri).get();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+
+                return bitmap;
+            }
+            private void saveToDb(ReviewData[] reviews, VideoData[] videos, MovieData movieData, MovieCover coverData)
+            {
+                FavouritesDatabase db = FavouritesDatabase.getInstance(mContext);
+                try
+                {
+                    db.favouritesDao().saveReviews(reviews);
+                    db.favouritesDao().saveVideos(videos);
+                    db.favouritesDao().saveMovieAsFavourite(movieData);
+                    db.favouritesDao().saveCover(coverData);
+                }
+                catch (SQLiteConstraintException e)
+                {
+                    // Happens if for some reason it's tried to re-save the same object
+                    // That means that the object is already in the db, so there is nothing to do
+                    e.printStackTrace();
+                }
             }
         };
     }
@@ -205,7 +232,6 @@ public class MovieDetailLoaderCallback implements LoaderManager.LoaderCallbacks<
                     tv.append("\n" + rev.author + " : " + rev.getContentPreview());
                 }
             }
-
         }
     }
 
